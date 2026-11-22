@@ -1,177 +1,316 @@
-# VTint (ELF 적응 구현) — 가상 함수 테이블 무결성 보호
+# VTint — 가상 함수 테이블 무결성 보호
 
 > 소프트웨어및시스템보안 · 논문 구현 프로젝트 · **3팀**
-> 선정 논문: *VTint: Protecting Virtual Function Tables' Integrity* (NDSS'15)
+> 
+> 
+> 선정 논문: *VTint: Protecting Virtual Function Tables' Integrity* (NDSS 2015)
+> 
 
-원논문은 Windows **PE** 바이너리를 재작성하지만, 본 구현은 동일한 핵심 아이디어를
-**Linux x86-64 ELF** 에 **실제 바이너리 재작성**으로 재현한다. 컴파일된 실행 파일(exe)을
-입력으로 받아 `PEParser(ELFParser) → BitCover → VRewriter` 순서로 처리하여 **보호
-바이너리** 를 만들고, 공격이 **차단되는지** 를 종료 코드로 판가름한다.
+## 프로젝트 소개
 
----
+본 프로젝트는 C++ 프로그램의 **가상 함수 테이블(vtable) 탈취 공격을 탐지하고 차단하는 VTint**를 구현한 프로젝트이다.
 
-## 1. 빠른 시작
+원논문은 Windows PE 바이너리를 대상으로 하지만, 본 구현에서는 VTint의 핵심 방어 기법을 **Linux x86-64 ELF 환경**에 적용하였다.
 
-### Docker (권장 · 어느 PC 에서도 동일 재현)
+컴파일된 ELF 바이너리를 입력받아 `ELFParser → BitCover → VRewriter`의 3단계를 거쳐 보호 바이너리를 생성하며, 가상 함수 호출 직전에 READONLY 및 ID 검사를 수행하여 공격 여부를 판정한다.
+
+## 1. 실행 환경
+
+| 항목 | 버전 |
+| --- | --- |
+| 운영체제 | Ubuntu 22.04 (x86-64) |
+| 개발 환경 | Linux / WSL2 / Docker |
+| Python | 3.10.12 |
+| GCC/G++ | 11.4.0 |
+| pyelftools | 0.31 |
+| Capstone | 5.0.1 |
+| LIEF | 0.15.1 |
+| pytest | 8.3.3 |
+
+Docker 사용을 권장하며, Dockerfile을 통해 필요한 의존성을 자동으로 설치할 수 있다.
+
+## 2. 설치 및 실행
+
+### 2.1 저장소 복제
+
 ```bash
-./docker-run.sh
+git clone https://github.com/baeseongjin123/SSO_Vtint.git
+cd SSO_Vtint
+git switch tests
 ```
-이미지(`vtint-env`)를 빌드하고 컨테이너 안에서 전체 데모를 실행하여 **보호 전/후 판정표** 를 출력한다.
 
-### 로컬 리눅스(Ubuntu 22.04 기준)
+### 2.2 Docker 실행
+
+프로젝트 루트 디렉터리에서 다음 명령어를 실행한다.
+
 ```bash
-# 의존성: g++, gcc, binutils, python3, pyelftools, capstone, lief
-pip3 install pyelftools==0.31 capstone==5.0.1 lief==0.15.1
-./run.sh
+bash docker-run.sh
 ```
 
-### 단계별 실행
+실행 시 다음 과정이 자동으로 진행된다.
+
+1. Docker 이미지(`vtint-env`) 빌드
+2. 취약 바이너리 컴파일
+3. ELF 바이너리 분석 및 가상 호출 지점 탐색
+4. VTint 검사 코드 삽입 및 보호 바이너리 생성
+5. 보호 적용 전·후 실행 결과 비교
+
+Docker 컨테이너 내부에 직접 접근하려면 다음 명령어를 사용한다.
+
 ```bash
-bash tests/build.sh                                   # 취약 바이너리 컴파일 → out/victim_vuln
-python3 tools/elfparser.py out/victim_vuln            # [1] ELF 파싱·후보 vtable (JSON)
-python3 tools/bitcover.py out/victim_vuln             # [2] 디스어셈블·가상호출/참조 (JSON)
-python3 tools/vrewriter.py out/victim_vuln out/victim_hardened   # [3] 재작성 → 보호 바이너리
-python3 tools/vtint.py judge out/victim_hardened inject          # 한 번 실행·판정
+bash docker-run.sh bash
 ```
 
-### 테스트 실행 (자동 검증)
-정상·위반·경계 3사례를 보호 전·후로 실행해 기대 결과와 맞는지 자동으로 확인한다.
+### 2.3 로컬 Linux 실행
+
+Docker를 사용하지 않는 경우 필요한 패키지를 설치한다.
+
 ```bash
-./docker-test.sh        # Windows(PowerShell) 명령은 tests/README.md 참고
-```
-결과 비교표: `results/before_after.md` · 자세한 실행 방법과 테스트 구성: [`tests/README.md`](tests/README.md)
-
----
-
-## 2. 공격 대상과 방어 원리
-
-C++ 다형성 객체의 맨 앞 8바이트는 **vfptr**(가상 함수 테이블 포인터)다. 가상 함수 호출은
-`vfptr → vtable[slot] → 간접 call` 로 디스패치된다. 공격자는 UAF/힙 오버플로로 **vfptr 을 덮어**
-가짜 테이블을 가리키게 하여 제어 흐름을 탈취한다(vtable hijacking).
-
-**핵심 관찰**: 정상 vtable 은 실행 중 절대 수정되지 않아 **읽기 전용** 영역에 있고, 주입된 가짜
-vtable 은 반드시 **쓰기 가능** 영역(힙)에 있다. 따라서 가상 호출 **직전** 에 vtable 의 성질만
-확인하면 공격을 가려낼 수 있다.
-
-VTint 는 두 가지 검사를 삽입한다.
-- **READONLY 검사** — vtable 이 쓰기 가능 영역이면 거부 → *vtable injection* 차단
-- **ID 검사** — vtable 페이지 선두 8바이트가 주입한 랜덤 ID 와 다르면 거부 → 읽기 전용이지만
-  vtable 이 아닌 데이터(.rodata) 악용(*vtable reuse*) 차단
-
-```mermaid
-flowchart LR
-    A["객체 vfptr"] --> B{"가상 호출 직전<br/>VTint 검사"}
-    B -->|"쓰기 가능?"| R["READONLY 실패<br/>→ 탐지(exit 99)"]
-    B -->|"페이지 ID 불일치?"| I["ID 실패<br/>→ 탐지(exit 99)"]
-    B -->|"읽기전용 & ID 일치"| K["정상 디스패치"]
+sudo apt-get update
+sudo apt-get install -y \
+    gcc g++ binutils python3 python3-pip gdb
 ```
 
----
+Python 라이브러리를 설치한다.
 
-## 3. 아키텍처 (exe → 3단계 → 보호 바이너리)
-
-```mermaid
-flowchart TD
-    E["컴파일된 exe<br/>(victim_vuln, -no-pie)"] --> P
-    subgraph VTint
-      P["① ELFParser<br/>(논문 PEParser)"] -->|"후보 vtable"| B["② BitCover"]
-      B -->|"가상호출 지점<br/>vtable 참조"| V["③ VRewriter"]
-    end
-    V --> H["보호 바이너리<br/>(victim_hardened)"]
-    H --> J["실행·판정<br/>정상/탈취/탐지"]
+```bash
+python3 -m pip install \
+    pyelftools==0.31 \
+    capstone==5.0.1 \
+    lief==0.15.1 \
+    pytest==8.3.3
 ```
 
-| 단계 | 파일 | 역할 | 사용 도구 |
-|---|---|---|---|
-| ① ELFParser | `tools/elfparser.py` | ELF 파싱, 읽기전용 섹션에서 **코드 포인터 배열 = 후보 vtable** 식별 | pyelftools |
-| ② BitCover | `tools/bitcover.py` | 디스어셈블, **가상 호출 지점**(`mov base,[this]→mov slot,[base]→call slot`) 과 **vtable 참조**(생성자 vfptr 대입) 식별 | capstone |
-| ③ VRewriter | `tools/vrewriter.py` | 읽기전용 `vtsec` 생성·vtable 이전·페이지 ID 기록, 참조 패치, 가상 호출에 **트램펄린 detour** 로 검사 삽입 | LIEF + freestanding 검사 루틴 |
+설치 후 다음 명령어를 실행한다.
 
-### 재작성 결과(메모리 레이아웃)
-```
-원본 .rodata 의 vtable  ──이전──▶  vtsec (0x500000, r--p)
-                                   ├ [0x500000] 8바이트 랜덤 ID   ← 페이지 선두
-                                   ├ [0x500008] _ZTV7Derived 복사본
-                                   └ [0x500030] _ZTV4Base   복사본
-검사 코드 세그먼트        ──주입──▶  code (0x600000, r-x)
-                                   ├ __vtint_check (freestanding, raw syscall)
-                                   └ 가상 호출별 트램펄린
-생성자의 vfptr 대입 immediate  ──패치──▶  새 vtsec 주소점
-가상 호출 계측 윈도우         ──detour──▶  jmp → 트램펄린 → 검사 → 복귀
+```bash
+bash run.sh
 ```
 
-트램펄린은 가상 호출 직전 vtable base 를 `__vtint_check(vtbl)` 로 넘긴다. 검사 루틴은
-`/proc/self/maps` 로 해당 매핑의 쓰기 가능 여부(READONLY)와 페이지 선두 ID(ID)를 확인하고,
-실패 시 `VTINT DETECTED <검사> vfptr=0x... region=[..]` 를 출력하고 **종료 코드 99** 로 중단한다.
+## 3. 구현 구조
 
-> 원리 애니메이션: [`docs/animation.html`](docs/animation.html) (브라우저로 열기)
+VTint는 가상 함수 호출 직전에 vtable의 무결성을 검사하여 공격을 탐지한다.
 
----
+### 3.1 방어 원리
 
-## 4. 검증 사례 (11주차 고정 3종)
+C++ 다형성 객체는 가상 함수 호출을 위해 vtable 포인터(vfptr)를 사용한다. 공격자가 메모리 취약점을 이용해 vfptr을 위조하면 실행 흐름을 탈취할 수 있다.
+
+이를 방지하기 위해 두 가지 검사를 수행한다.
+
+- **READONLY 검사:** vtable이 쓰기 가능한 메모리 영역에 존재하는지 확인하여 힙에 생성된 가짜 vtable을 탐지한다.
+- **ID 검사:** 읽기 전용 영역에 존재하더라도 보호용 식별자(ID)가 일치하지 않으면 위조된 vtable로 판단하여 차단한다.
+
+검사에 실패하면 탐지 메시지를 출력하고 종료 코드 `99`로 프로그램을 중단한다.
+
+### 3.2 바이너리 재작성 과정
+
+```
+원본 ELF 바이너리
+        |
+        v
+    ELFParser
+  (vtable 후보 탐색)
+        |
+        v
+     BitCover
+  (가상 호출 지점 분석)
+        |
+        v
+    VRewriter
+  (검사 코드 삽입)
+        |
+        v
+   보호 ELF 바이너리
+        |
+        v
+  READONLY / ID 검사
+```
+
+| 모듈 | 파일 | 역할 |
+| --- | --- | --- |
+| ELFParser | `tools/elfparser.py` | ELF 구조 분석 및 vtable 후보 식별 |
+| BitCover | `tools/bitcover.py` | 가상 호출 지점과 vtable 참조 분석 |
+| VRewriter | `tools/vrewriter.py` | vtable 이전 및 보호 코드 삽입 |
+| Runtime | `runtime/vtint_check.c` | READONLY 및 ID 검사 수행 |
+| CLI | `tools/vtint.py` | 분석·재작성·실행 과정 통합 |
+
+자세한 구현 구조는 [아키텍처 문서](docs/architecture.md)를 참고한다.
+
+## 4. 사용 방법
+
+전체 과정을 자동으로 실행하려면 다음 명령어를 사용한다.
+
+```bash
+bash run.sh
+```
+
+각 기능을 개별적으로 실행할 수도 있다.
+
+```bash
+# 취약 바이너리 컴파일
+bash tests/build.sh
+
+# ELF 파싱 및 vtable 탐색
+python3 tools/elfparser.py out/victim_vuln
+
+# 가상 함수 호출 지점 분석
+python3 tools/bitcover.py out/victim_vuln
+
+# 보호 바이너리 생성
+python3 tools/vrewriter.py \
+    out/victim_vuln out/victim_hardened
+
+# 보호 바이너리 실행 및 판정
+python3 tools/vtint.py judge \
+    out/victim_hardened inject
+```
+
+빌드 및 재작성된 실행 파일은 `out/` 디렉터리에 생성된다.
+
+## 5. 테스트 및 검증
+
+### 5.1 테스트 실행
+
+본 프로젝트는 pytest 기반 자동화 테스트를 제공한다.
+
+**Docker 환경**
+
+```bash
+bash docker-test.sh
+```
+
+**로컬 Linux 환경**
+
+```bash
+bash test.sh
+```
+
+**고정 검증 사례만 실행**
+
+```bash
+bash test.sh -k D
+```
+
+테스트 구성과 세부 실행 방법은 [테스트 안내 문서](TESTING.md)를 참고한다.
+
+### 5.2 보호 적용 전·후 비교
+
+11주차에 정의한 정상·위반·경계 사례를 이용하여 동일한 입력에 대한 보호 적용 전·후 결과를 비교하였다.
 
 | 구분 | 입력 | 보호 전 | 보호 후 |
-|---|---|---|---|
-| **정상** | 오버플로 없음, Base*→Derived 가상호출 | `DERIVED RUN`, exit 0 | 동일 (`DERIVED RUN`, exit 0) |
-| **위반(injection)** | 힙 가짜 vtable 주소로 vfptr 덮음 | `HIJACKED`, exit 66 | `VTINT DETECTED READONLY`, exit 99 |
-| **경계(rodata reuse)** | .rodata 함수포인터 배열로 vfptr 덮음 | `HIJACKED`, exit 66 | `VTINT DETECTED ID`, exit 99 |
+| --- | --- | --- | --- |
+| 정상 | `normal` | 정상 실행 (exit 0) | 정상 실행 (exit 0) |
+| 위반 | `inject` | 제어 흐름 탈취 (exit 66) | READONLY 탐지 (exit 99) |
+| 경계 | `rodata` | 제어 흐름 탈취 (exit 66) | ID 탐지 (exit 99) |
 
-종료 코드: **0**=정상, **66**=제어 흐름 탈취(HIJACKED), **99**=VTint 탐지·차단.
+`victim`, `tc1`, `tc2`, `tc3`의 네 가지 프로그램에 대해 정상·위반·경계 사례를 각각 실행하였으며, **총 12개 비교 사례가 모두 기대 결과와 일치**하였다.
 
-데모 실행(`./run.sh`) 결과 3종 모두 기대와 일치한다. (탈가상화를 막기 위해 객체 생성은
-`tests/factory.cpp` 로 분리하고 `-O0 -fno-devirtualize` 로 컴파일한다.)
+종료 코드의 의미는 다음과 같다.
 
----
+- `0`: 정상 실행
+- `66`: 제어 흐름 탈취 발생
+- `99`: VTint 탐지 및 차단
 
-## 5. 원논문 대비 차이 · 한계
+### 5.3 전체 테스트 결과
 
-| 항목 | 원논문(VTint) | 본 구현 |
-|---|---|---|
-| 대상 포맷 | Windows PE | Linux ELF (x86-64) |
-| 읽기전용 검사 | SEH(쓰기 예외) | `/proc/self/maps` 매핑 권한 조회 |
-| vtable 식별 | relocation 테이블 | 읽기전용 섹션의 코드 포인터 배열 스캔(+심볼) |
-| 모듈 판별 | PEB 순회 | (미구현, fail-safe 생략) |
+테스트 결과는 다음과 같다.
 
-- **적용 범위**: 사용자가 만든 테스트 바이너리는 재현을 쉽게 하려고 `-no-pie -O0` 로 컴파일한다.
-  임의 호출 지점 in-place 패치가 깨지기 쉬워, 트램펄린 detour 는 `mov base,[this]→mov slot,[base]`
-  패턴이 명확한 바이너리를 대상으로 한다(VTint 역시 컴파일러 관용구에 의존).
-- **한계**: 이미 존재하는 정상 vtable 을 가리키게 하는 **vtable reuse** 공격은 완전히 막지 못한다
-  (논문과 동일 한계). fail-safe/멀티 모듈, PIE 는 향후 과제.
-
----
-
-## 6. 파일 구성
 ```
-vtint/
-├─ Dockerfile            재현 환경(Ubuntu 22.04 + 도구)
-├─ docker-run.sh         Docker 빌드+데모
-├─ run.sh               로컬 데모
-├─ tools/
-│  ├─ elfparser.py      ① ELFParser
-│  ├─ bitcover.py       ② BitCover
-│  ├─ vrewriter.py      ③ VRewriter
-│  └─ vtint.py          오케스트레이터(CLI·판정표)
-├─ runtime/
-│  ├─ vtint_check.c     주입되는 freestanding 검사 루틴
-│  └─ check.ld          검사 블롭 링커 스크립트
-├─ tests/
-│  ├─ common.h / factory.cpp / victim.cpp   취약 예제
-│  └─ build.sh
-├─ docs/
-│  ├─ architecture.md   상세 아키텍처·원리
-│  └─ animation.html    원리 애니메이션
-└─ out/                 산출물(victim_vuln, victim_hardened)
+4 failed, 60 passed, 2 warnings in 12.71s
 ```
 
----
+| 항목 | 결과 |
+| --- | --- |
+| 전체 테스트 | 64개 |
+| 통과 | 60개 |
+| 실패 | 4개 |
+| 경고 | 2건 |
+| 실행 시간 | 12.71초 |
 
-## 7. AI 활용 기록
-- **요청**: 원논문(PE/SEH) 을 Linux ELF 로 옮기는 방법, `PEParser→BitCover→VRewriter` 각 단계의
-  ELF 대응 설계, 검사 루틴(읽기전용·ID) 구현.
-- **결과 확인**: 컴파일된 바이너리를 `readelf/objdump` 로 직접 실측하여 vtable 배치(.rodata),
-  가상 호출 코드 패턴, 생성자 vtable 참조를 AI 설계와 대조했다.
-- **채택·수정**: 3단계 구조와 검증 사례 3종 틀은 그대로 채택. 원논문의 SEH 읽기전용 검사는
-  `/proc/self/maps` 기반으로, PE relocation 식별은 읽기전용 섹션 코드 포인터 스캔으로 대체했다.
-- **어려웠던 점**: capstone 의 x86 operand 타입 상수(`X86_OP_MEM`=3 vs `CS_OP_MEM`=128) 불일치로
-  가상 호출 탐지가 실패 → x86 전용 상수로 교정. LIEF 로 지정 VA 세그먼트 추가가 가능함을 실측 확인.
+핵심 방어 시나리오는 모두 통과하였으나, 확장 테스트에서는 정상 호출이 공격으로 잘못 탐지되는 오탐(False Positive)이 확인되었다.
+
+실패 사례는 다음과 같다.
+
+| 테스트 | 문제 |
+| --- | --- |
+| E2_multi_base2 | 다중 상속의 두 번째 vptr에서 ID 오탐 |
+| E5_first | 4KB 초과 vtable 영역에서 ID 오탐 |
+| E5_all | 다수 vtable 사용 시 ID 오탐 |
+| C14_big_maps | 큰 `/proc/self/maps` 입력에서 READONLY 오탐 |
+
+해당 문제는 추가 분석 및 개선이 필요한 상태이다.
+
+## 6. 프로젝트 구조
+
 ```
+SSO_Vtint/
+├── README.md
+├── Dockerfile
+├── docker-run.sh
+├── docker-test.sh
+├── run.sh
+├── test.sh
+├── pytest.ini
+│
+├── tools/
+│   ├── elfparser.py
+│   ├── bitcover.py
+│   ├── vrewriter.py
+│   └── vtint.py
+│
+├── runtime/
+│   ├── vtint_check.c
+│   └── check.ld
+│
+├── tests/
+│   ├── build.sh
+│   ├── victim.cpp
+│   ├── factory.cpp
+│   ├── test_build.py
+│   ├── test_cases.py
+│   ├── test_fixed_cases.py
+│   ├── test_runtime_unit.py
+│   ├── test_false_positive.py
+│   ├── cases/
+│   ├── fixed/
+│   ├── progs/
+│   └── unit/
+│
+├── docs/
+│   ├── architecture.md
+│   ├── animation.html
+│   ├── TEST_PLAN.md
+│   ├── PROJECT_OVERVIEW.md
+│   └── results/
+│       └── week12/
+│           ├── before_after.md
+│           ├── pytest_output.txt
+│           ├── env.txt
+│           └── saved_at.txt
+│
+└── out/                  # 실행 후 생성
+```
+
+## 7. 구현 범위 및 한계
+
+원논문과 달리 본 프로젝트는 Linux ELF 환경에 맞추어 일부 기능을 변경하였다.
+
+| 항목 | 원논문 | 본 구현 |
+| --- | --- | --- |
+| 대상 바이너리 | Windows PE | Linux ELF (x86-64) |
+| READONLY 검사 | SEH 기반 | `/proc/self/maps` 기반 |
+| vtable 식별 | Relocation 정보 활용 | 코드 포인터 배열 및 심볼 분석 |
+| 바이너리 재작성 | PE | ELF |
+| 모듈 판별 | PEB 기반 | 미구현 |
+
+현재 구현은 `-no-pie`, `-O0`, `-fno-devirtualize` 등의 컴파일 옵션을 사용하는 테스트 바이너리를 중심으로 검증하였다.
+
+다음과 같은 한계가 있다.
+
+- PIE 및 멀티 모듈 환경 미지원
+- 일부 컴파일러 최적화 및 가상 호출 패턴에 대한 제약
+- 다중 상속 및 대규모 vtable에서 오탐 발생 가능
+- 큰 메모리 매핑 정보 처리의 제약
+- 기존 정상 vtable을 재사용하는 공격을 완전히 차단하지 못함
+
+따라서 본 구현은 VTint의 핵심 방어 메커니즘을 실험적으로 재현하기 위한 것으로, 모든 ELF 바이너리에 대한 범용적인 보호 기능을 제공하지는 않는다.
