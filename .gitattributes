@@ -1,0 +1,10 @@
+# 저장소는 항상 LF 로 저장 → Docker/Linux 에서 셸 스크립트·소스가 깨지지 않도록
+* text=auto eol=lf
+*.sh  text eol=lf
+*.c   text eol=lf
+*.h   text eol=lf
+*.cpp text eol=lf
+*.py  text eol=lf
+*.ld  text eol=lf
+*.html text eol=lf
+Dockerfile text eol=lf

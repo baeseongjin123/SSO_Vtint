@@ -1,0 +1,338 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>VTint 동작 원리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* ── 레이아웃: 좌측 메모리맵 패널 + 우측 호출-흐름 파이프라인 스테이지 ──
+   팔레트: 디스어셈블러 다크(청회색 중립) + 신호색(통과=민트/탈취=레드/ID실패=앰버) */
+:root{
+  --bg:#0c1016; --panel:#121823; --panel-2:#0e141d; --line:#263243;
+  --ink:#e8eef6; --muted:#8798ad; --faint:#5a6b81;
+  --accent:#49e3b4;      /* 통과·VTint */
+  --danger:#ff5d6c;      /* 탈취·READONLY 실패 */
+  --warn:#ffb545;        /* ID 실패 */
+  --cool:#5aa6ff;        /* 포인터·흐름 */
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --disp:"Space Grotesk",system-ui,sans-serif;
+  --body:"Inter",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:
+     radial-gradient(1100px 500px at 78% -8%, rgba(73,227,180,.08), transparent 60%),
+     radial-gradient(900px 600px at -5% 110%, rgba(90,166,255,.07), transparent 55%),
+     var(--bg);
+  color:var(--ink);font-family:var(--body);line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1040px;margin:0 auto;
+  padding-left:max(18px,env(safe-area-inset-left,0px));
+  padding-right:max(18px,env(safe-area-inset-right,0px));
+  padding-block:30px 44px;}
+
+/* 헤더 */
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;margin-bottom:6px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent)}
+h1{font-family:var(--disp);font-weight:700;font-size:clamp(26px,4.4vw,38px);margin:0;
+  letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);font-size:14.5px;max-width:62ch;margin:2px 0 20px}
+.sub b{color:var(--ink);font-weight:600}
+
+/* 컨트롤 바 */
+.controls{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-bottom:18px}
+.seg{display:inline-flex;background:var(--panel-2);border:1px solid var(--line);border-radius:11px;padding:3px}
+.seg button{font-family:var(--body);font-weight:600;font-size:13.5px;color:var(--muted);
+  background:none;border:0;padding:8px 14px;border-radius:8px;cursor:pointer;transition:.18s}
+.seg button[aria-pressed=true]{background:var(--panel);color:var(--ink);
+  box-shadow:inset 0 0 0 1px var(--line)}
+.seg.scn button[aria-pressed=true]{color:var(--cool);box-shadow:inset 0 0 0 1px rgba(90,166,255,.5)}
+.toggle{display:inline-flex;align-items:center;gap:9px;font-size:13.5px;color:var(--muted);cursor:pointer;user-select:none}
+.toggle input{position:absolute;opacity:0;pointer-events:none}
+.switch{width:44px;height:25px;border-radius:999px;background:#30200f;border:1px solid var(--line);
+  position:relative;transition:.2s;flex:none}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;
+  background:var(--warn);transition:.2s}
+.toggle input:checked + .switch{background:rgba(73,227,180,.18);border-color:rgba(73,227,180,.5)}
+.toggle input:checked + .switch::after{left:21px;background:var(--accent)}
+.toggle input:focus-visible + .switch{outline:2px solid var(--cool);outline-offset:2px}
+.play{margin-left:auto;font-family:var(--disp);font-weight:600;font-size:14px;color:#07140f;
+  background:var(--accent);border:0;border-radius:10px;padding:10px 20px;cursor:pointer;
+  display:inline-flex;gap:8px;align-items:center;transition:.15s}
+.play:hover{filter:brightness(1.07)}
+.play:active{transform:translateY(1px)}
+.play:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* 메인 그리드 */
+.stage{display:grid;grid-template-columns:265px 1fr;gap:16px;align-items:stretch}
+@media(max-width:760px){.stage{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px}
+.card h2{font-family:var(--mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--faint);margin:0;padding:13px 15px 0}
+
+/* 메모리 맵 */
+.mem{padding:13px 15px 15px;display:flex;flex-direction:column;gap:8px}
+.region{border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--panel-2);
+  position:relative;transition:.25s;overflow:hidden}
+.region .r-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.region .r-name{font-family:var(--disp);font-weight:600;font-size:13.5px}
+.region .addr{font-family:var(--mono);font-size:11px;color:var(--faint)}
+.perm{font-family:var(--mono);font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;
+  border:1px solid currentColor}
+.perm.ro{color:var(--accent)} .perm.rw{color:var(--danger)} .perm.rx{color:var(--cool)}
+.region .note{font-size:11.5px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
+.region.target{border-color:var(--cool);box-shadow:0 0 0 1px var(--cool),0 8px 26px -14px var(--cool)}
+.region.target::before{content:"◀ vfptr";position:absolute;right:10px;bottom:7px;
+  font-family:var(--mono);font-size:10.5px;color:var(--cool);opacity:0;animation:tagin .4s .15s forwards}
+@keyframes tagin{to{opacity:1}}
+
+/* 흐름 파이프라인 */
+.flow{padding:16px 16px 18px;display:flex;flex-direction:column;gap:14px;min-height:340px}
+.pipe{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:6px}
+@media(max-width:520px){.pipe{grid-template-columns:1fr;gap:10px}.pipe .arrow{transform:rotate(90deg);justify-self:center}}
+.node{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:13px;
+  text-align:center;transition:.25s;position:relative}
+.node .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.node .v{font-family:var(--disp);font-weight:600;font-size:15px;margin-top:3px}
+.node .d{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:4px;min-height:14px}
+.node.lit{border-color:var(--cool);box-shadow:0 0 0 1px var(--cool)}
+.arrow{color:var(--faint);font-size:20px;transition:.25s}
+.arrow.lit{color:var(--cool)}
+
+/* VTint 게이트 */
+.gate{border:1px dashed var(--line);border-radius:12px;padding:13px;transition:.25s;position:relative}
+.gate.active{border-style:solid;border-color:rgba(73,227,180,.55)}
+.gate.off{opacity:.42;filter:grayscale(.5)}
+.gate .gt{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-weight:600;font-size:14px}
+.gate .gt .dot{width:8px;height:8px;border-radius:50%;background:var(--faint)}
+.gate.active .gt .dot{background:var(--accent);box-shadow:0 0 10px var(--accent)}
+.checks{display:flex;gap:9px;margin-top:11px}
+.check{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:9px 10px;transition:.3s}
+.check .cn{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.check .cs{font-family:var(--disp);font-weight:600;font-size:13px;margin-top:3px;color:var(--faint)}
+.check.pass{border-color:rgba(73,227,180,.5)} .check.pass .cs{color:var(--accent)}
+.check.fail{border-color:rgba(255,93,108,.55)} .check.fail .cs{color:var(--danger)}
+.check.failid{border-color:rgba(255,181,69,.55)} .check.failid .cs{color:var(--warn)}
+.check.skip{opacity:.5}
+
+/* 결과 콘솔 */
+.verdict{background:#070a0f;border:1px solid var(--line);border-radius:12px;padding:13px 15px;
+  font-family:var(--mono);font-size:13px;min-height:84px;transition:.25s}
+.verdict .ln{display:block;white-space:pre-wrap;word-break:break-all}
+.verdict .muted{color:var(--faint)} .verdict .ok{color:var(--accent)}
+.verdict .bad{color:var(--danger)} .verdict .amber{color:var(--warn)}
+.verdict.win{box-shadow:0 0 0 1px rgba(73,227,180,.4)}
+.verdict.block{box-shadow:0 0 0 1px rgba(255,93,108,.35)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:16px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+footer{margin-top:22px;color:var(--faint);font-size:12px;font-family:var(--mono)}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">NDSS'15 · 3팀 구현</span>
+    <h1>VTint 동작 원리</h1>
+  </header>
+  <p class="sub">가상 함수 호출 직전, vtable 이 <b>읽기 전용</b>인지(injection 차단)와 페이지 선두
+    <b>ID</b>가 맞는지(.rodata 재사용 차단)를 검사한다. 시나리오와 <b>보호 적용</b>을 바꿔가며 흐름을 따라가 보자.</p>
+
+  <div class="controls">
+    <div class="seg scn" role="group" aria-label="시나리오">
+      <button data-scn="normal" aria-pressed="true">정상 호출</button>
+      <button data-scn="inject" aria-pressed="false">vtable 주입</button>
+      <button data-scn="rodata" aria-pressed="false">.rodata 재사용</button>
+    </div>
+    <label class="toggle"><input type="checkbox" id="prot" checked><span class="switch"></span>VTint 보호 적용</label>
+    <button class="play" id="play">▶ 재생</button>
+  </div>
+
+  <div class="stage">
+    <!-- 메모리 맵 -->
+    <section class="card" aria-label="메모리 맵">
+      <h2>프로세스 메모리</h2>
+      <div class="mem" id="mem">
+        <div class="region" data-r="text">
+          <div class="r-top"><span class="r-name">.text</span><span class="perm rx">r-x</span></div>
+          <div class="addr">0x401000</div><div class="note">run() · hijacked()</div>
+        </div>
+        <div class="region" data-r="rodata">
+          <div class="r-top"><span class="r-name">.rodata</span><span class="perm ro">r--p</span></div>
+          <div class="addr">0x402000</div><div class="note">const 함수포인터 배열</div>
+        </div>
+        <div class="region" data-r="vtsec">
+          <div class="r-top"><span class="r-name">vtsec</span><span class="perm ro">r--p</span></div>
+          <div class="addr">0x500000</div><div class="note">ID + 이전된 vtable</div>
+        </div>
+        <div class="region" data-r="code">
+          <div class="r-top"><span class="r-name">vtint_code</span><span class="perm rx">r-x</span></div>
+          <div class="addr">0x600000</div><div class="note">__vtint_check</div>
+        </div>
+        <div class="region" data-r="heap">
+          <div class="r-top"><span class="r-name">heap</span><span class="perm rw">rw-p</span></div>
+          <div class="addr">0x…eb0</div><div class="note">가짜 vtable (주입)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 흐름 -->
+    <section class="card" aria-label="가상 호출 흐름">
+      <h2>가상 호출 흐름</h2>
+      <div class="flow">
+        <div class="pipe">
+          <div class="node" id="n-obj"><div class="k">객체</div><div class="v">vfptr</div><div class="d" id="d-obj">b-&gt;run()</div></div>
+          <div class="arrow" id="a1">→</div>
+          <div class="node" id="n-vt"><div class="k">vtable base</div><div class="v" id="v-vt">—</div><div class="d" id="d-vt"></div></div>
+          <div class="arrow" id="a2">→</div>
+          <div class="node" id="n-end"><div class="k" id="k-end">디스패치</div><div class="v" id="v-end">—</div><div class="d" id="d-end"></div></div>
+        </div>
+
+        <div class="gate" id="gate">
+          <div class="gt"><span class="dot"></span>VTint 검사 게이트 <span id="gate-state" style="font-family:var(--mono);font-size:11px;color:var(--faint);font-weight:400">· 비활성</span></div>
+          <div class="checks">
+            <div class="check" id="c-ro"><div class="cn">① READONLY</div><div class="cs" id="s-ro">대기</div></div>
+            <div class="check" id="c-id"><div class="cn">② PAGE ID</div><div class="cs" id="s-id">대기</div></div>
+          </div>
+        </div>
+
+        <div class="verdict" id="verdict">
+          <span class="ln muted"># ▶ 재생을 눌러 호출 흐름을 실행</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:var(--accent)"></i>통과 / VTint</span>
+    <span><i style="background:var(--danger)"></i>탈취 · READONLY 실패</span>
+    <span><i style="background:var(--warn)"></i>ID 실패</span>
+    <span><i style="background:var(--cool)"></i>포인터 흐름</span>
+  </div>
+  <footer id="foot">종료코드 — 0: 정상 · 66: 제어 흐름 탈취(HIJACKED) · 99: VTint 탐지·차단</footer>
+</div>
+
+<script>
+const SCN = {
+  normal: { target:'vtsec',  addr:'0x500018', region:'vtsec',  perms:'r--p', writable:false, idok:true,
+            label:'정상 호출', fn:'Derived::run()', out:'DERIVED RUN', exit:0 },
+  inject: { target:'heap',   addr:'0x…eb0',   region:'heap',   perms:'rw-p', writable:true,  idok:false,
+            label:'vtable 주입', fn:'hijacked()', out:'VTINT DETECTED READONLY', exit:99, fail:'ro' },
+  rodata: { target:'rodata', addr:'0x4020b8', region:'.rodata',perms:'r--p', writable:false, idok:false,
+            label:'.rodata 재사용', fn:'hijacked()', out:'VTINT DETECTED ID', exit:99, fail:'id' },
+};
+let scn='normal', protect=true, timers=[], running=false;
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const after=(t,f)=>timers.push(setTimeout(f,t));
+const clearT=()=>{timers.forEach(clearTimeout);timers=[];};
+
+function reset(){
+  clearT(); running=false;
+  $$('.region').forEach(r=>r.classList.remove('target'));
+  ['n-obj','n-vt','n-end'].forEach(i=>$('#'+i).classList.remove('lit'));
+  $('#a1').classList.remove('lit'); $('#a2').classList.remove('lit');
+  $('#v-vt').textContent='—'; $('#d-vt').textContent='';
+  $('#v-end').textContent='—'; $('#d-end').textContent=''; $('#k-end').textContent='디스패치';
+  for(const c of ['c-ro','c-id']) $('#'+c).className='check';
+  $('#s-ro').textContent='대기'; $('#s-id').textContent='대기';
+  const g=$('#gate'); g.classList.toggle('active',protect); g.classList.toggle('off',!protect);
+  $('#gate-state').textContent = protect?'· 활성 (보호 후)':'· 비활성 (보호 전)';
+  const v=$('#verdict'); v.className='verdict';
+  v.innerHTML='<span class="ln muted"># ▶ 재생을 눌러 호출 흐름을 실행</span>';
+}
+function syncScenario(){
+  const s=SCN[scn];
+  $('#d-obj').textContent = scn==='normal' ? 'b->run()' : 'overflow→vfptr 덮임';
+  reset();
+}
+
+function play(){
+  if(running) return; reset(); running=true;
+  const s=SCN[scn];
+  const v=$('#verdict');
+  const line=(cls,txt)=>{const e=document.createElement('span');e.className='ln '+(cls||'');e.textContent=txt;v.appendChild(e);};
+  v.innerHTML='';
+
+  // 1) vfptr 로드
+  after(60,()=>{ $('#n-obj').classList.add('lit'); line('muted','vfptr ← *(obj)   // 객체에서 vtable 포인터 로드'); });
+  // 2) 포인터가 대상 영역으로
+  after(620,()=>{
+    $('#a1').classList.add('lit'); $('#n-vt').classList.add('lit');
+    $('#v-vt').textContent=s.addr; $('#d-vt').textContent=s.region+' · '+s.perms;
+    $('#mem [data-r="'+s.target+'"]').classList.add('target');
+    line('', 'vtable @ '+s.addr+'  ('+s.region+', '+s.perms+')');
+  });
+
+  // 3) 게이트
+  if(protect){
+    after(1300,()=>{
+      // READONLY
+      const ro=$('#c-ro');
+      if(s.writable){ ro.classList.add('fail'); $('#s-ro').textContent='실패 · 쓰기 가능';
+        line('bad','① READONLY: region='+s.perms+' → 쓰기 가능 → 거부'); }
+      else{ ro.classList.add('pass'); $('#s-ro').textContent='통과 · r--p';
+        line('ok','① READONLY: region='+s.perms+' → 읽기 전용 → 통과'); }
+    });
+    after(2000,()=>{
+      const id=$('#c-id');
+      if(s.writable){ id.classList.add('skip'); $('#s-id').textContent='생략';
+        finishBlock(s,'READONLY'); return; }
+      if(s.idok){ id.classList.add('pass'); $('#s-id').textContent='통과 · ID 일치';
+        line('ok','② PAGE ID: *(page)==ID → 일치 → 통과'); finishPass(s); }
+      else{ id.classList.add('failid'); $('#s-id').textContent='실패 · ID 불일치';
+        line('amber','② PAGE ID: *(page)!=ID → vtable 아님 → 거부'); finishBlock(s,'ID'); }
+    });
+  } else {
+    // 보호 전: 게이트 우회
+    after(1300,()=>{ line('muted','(보호 전) 검사 없음 → vtable 그대로 디스패치'); finishRaw(s); });
+  }
+}
+
+function finishPass(s){
+  after(520,()=>{
+    $('#a2').classList.add('lit'); $('#n-end').classList.add('lit');
+    $('#k-end').textContent='디스패치'; $('#v-end').textContent=s.fn; $('#d-end').textContent='정상 실행';
+    const v=$('#verdict'); v.classList.add('win');
+    const e=document.createElement('span');e.className='ln ok';e.textContent='→ '+s.out+'   (exit '+s.exit+')';v.appendChild(e);
+    running=false;
+  });
+}
+function finishBlock(s,why){
+  after(520,()=>{
+    $('#a2').classList.add('lit'); $('#n-end').classList.add('lit');
+    $('#n-end').style.boxShadow='0 0 0 1px var(--danger)';
+    $('#k-end').textContent='차단'; $('#v-end').textContent='프로그램 종료';
+    $('#d-end').textContent='exit 99';
+    const v=$('#verdict'); v.classList.add('block');
+    const e=document.createElement('span');e.className='ln bad';
+    e.textContent='→ '+s.out+' vfptr='+s.addr+' region=['+s.perms+']   (exit 99)';
+    v.appendChild(e);
+    const e2=document.createElement('span');e2.className='ln muted';e2.textContent='   hijacked() 실행되지 않음 — 공격 차단';v.appendChild(e2);
+    running=false;
+  });
+}
+function finishRaw(s){ // 보호 전
+  after(520,()=>{
+    $('#a2').classList.add('lit'); $('#n-end').classList.add('lit');
+    const v=$('#verdict');
+    if(s.exit===0){ $('#k-end').textContent='디스패치'; $('#v-end').textContent=s.fn; $('#d-end').textContent='정상 실행';
+      v.classList.add('win'); const e=document.createElement('span');e.className='ln ok';
+      e.textContent='→ '+s.out+'   (exit 0)';v.appendChild(e); }
+    else{ $('#n-end').style.boxShadow='0 0 0 1px var(--danger)';
+      $('#k-end').textContent='탈취'; $('#v-end').textContent='hijacked()'; $('#d-end').textContent='제어 흐름 탈취';
+      v.classList.add('block'); const e=document.createElement('span');e.className='ln bad';
+      e.textContent='→ HIJACKED   (exit 66)   공격 성공';v.appendChild(e); }
+    running=false;
+  });
+}
+
+$$('.seg.scn button').forEach(b=>b.addEventListener('click',()=>{
+  $$('.seg.scn button').forEach(x=>x.setAttribute('aria-pressed', x===b));
+  scn=b.dataset.scn; $('#n-end').style.boxShadow=''; syncScenario();
+}));
+$('#prot').addEventListener('change',e=>{ protect=e.target.checked; $('#n-end').style.boxShadow=''; reset(); });
+$('#play').addEventListener('click',play);
+syncScenario();
+</script>

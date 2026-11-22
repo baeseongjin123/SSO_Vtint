@@ -1,0 +1,11 @@
+# 빌드 산출물 (run.sh / docker-run.sh 로 재생성)
+out/
+
+# 파이썬 캐시
+__pycache__/
+*.pyc
+
+# 임시
+*.o
+*.bin
+*.elf
