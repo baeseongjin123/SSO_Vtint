@@ -9,3 +9,7 @@ __pycache__/
 *.o
 *.bin
 *.elf
+
+# 테스트 결과 (test.sh 가 생성)
+/results/
+.pytest_cache/

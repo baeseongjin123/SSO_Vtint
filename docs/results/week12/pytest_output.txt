@@ -1,0 +1,148 @@
+.....................................F..F.F....................F         [100%]
+=================================== FAILURES ===================================
+______________________ test_E1_E2_classes[E2_multi_base2] ______________________
+
+fp_bins = {'meta': {'check_va': '0x6000b0', 'code_va': '0x600000', 'hooked_vcalls': 6, 'id': '0xaafcc1cd3b32359d', ...}, 'plain'...xPath('/tmp/pytest-of-root/pytest-0/fp0/fp_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/fp0/fp_hardened')}
+mode = 'multi_base2'
+
+    @pytest.mark.parametrize(
+        "mode",
+        ["base", "derived", "other", "multi", "multi_base2"],
+        ids=["E1_base", "E1_derived", "E1_other", "E2_multi", "E2_multi_base2"],
+    )
+    def test_E1_E2_classes(fp_bins, mode):
+        """E1/E2: 클래스별 정상 가상 호출 (E2 는 다중 상속, multi_base2 는 2차 vptr)."""
+>       _same_and_clean(fp_bins, mode, f"E_{mode}")
+
+tests/test_false_positive.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+b = {'meta': {'check_va': '0x6000b0', 'code_va': '0x600000', 'hooked_vcalls': 6, 'id': '0xaafcc1cd3b32359d', ...}, 'plain'...xPath('/tmp/pytest-of-root/pytest-0/fp0/fp_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/fp0/fp_hardened')}
+mode = 'multi_base2', name = 'E_multi_base2', timeout = 10
+
+    def _same_and_clean(b, mode, name, timeout=10):
+        before = run(b["plain"], mode, log_name=f"{name}_plain", timeout=timeout)
+        after = run(b["vtint"], mode, log_name=f"{name}_vtint", timeout=timeout)
+        assert before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None and not after.timed_out, f"보호 후 크래시: {after.summary()}\n{after.output}"
+>       assert MSG_DETECTED not in after.output, f"오탐:\n{after.output}"
+E       AssertionError: 오탐:
+E         VTINT DETECTED ID vfptr=0x0000000000402090 region=[r--p]
+E         
+E       assert 'VTINT DETECTED' not in 'VTINT DETEC...ion=[r--p]\n'
+E         
+E         'VTINT DETECTED' is contained here:
+E           VTINT DETECTED ID vfptr=0x0000000000402090 region=[r--p]
+E         ? ++++++++++++++
+
+tests/test_false_positive.py:38: AssertionError
+_______________________ test_E5_vtsec_over_4kb[E5_first] _______________________
+
+many_bins = {'meta': {'check_va': '0x6000b0', 'code_va': '0x600000', 'hooked_vcalls': 3, 'id': '0xbf341d2332a44011', ...}, 'plain'...tmp/pytest-of-root/pytest-0/many0/many_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/many0/many_hardened')}
+mode = 'first'
+
+    @pytest.mark.parametrize("mode", ["first", "last", "all"], ids=["E5_first", "E5_last", "E5_all"])
+    def test_E5_vtsec_over_4kb(many_bins, mode):
+        """E5: vtable 200개로 vtsec 이 4KB 를 넘을 때 (ID 가 첫 페이지에만 있으면 last/all 에서 오탐)."""
+>       _same_and_clean(many_bins, mode, f"E5_{mode}")
+
+tests/test_false_positive.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+b = {'meta': {'check_va': '0x6000b0', 'code_va': '0x600000', 'hooked_vcalls': 3, 'id': '0xbf341d2332a44011', ...}, 'plain'...tmp/pytest-of-root/pytest-0/many0/many_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/many0/many_hardened')}
+mode = 'first', name = 'E5_first', timeout = 10
+
+    def _same_and_clean(b, mode, name, timeout=10):
+        before = run(b["plain"], mode, log_name=f"{name}_plain", timeout=timeout)
+        after = run(b["vtint"], mode, log_name=f"{name}_vtint", timeout=timeout)
+        assert before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None and not after.timed_out, f"보호 후 크래시: {after.summary()}\n{after.output}"
+>       assert MSG_DETECTED not in after.output, f"오탐:\n{after.output}"
+E       AssertionError: 오탐:
+E         VTINT DETECTED ID vfptr=0x0000000000504480 region=[r--p]
+E         
+E       assert 'VTINT DETECTED' not in 'VTINT DETEC...ion=[r--p]\n'
+E         
+E         'VTINT DETECTED' is contained here:
+E           VTINT DETECTED ID vfptr=0x0000000000504480 region=[r--p]
+E         ? ++++++++++++++
+
+tests/test_false_positive.py:38: AssertionError
+________________________ test_E5_vtsec_over_4kb[E5_all] ________________________
+
+many_bins = {'meta': {'check_va': '0x6000b0', 'code_va': '0x600000', 'hooked_vcalls': 3, 'id': '0xbf341d2332a44011', ...}, 'plain'...tmp/pytest-of-root/pytest-0/many0/many_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/many0/many_hardened')}
+mode = 'all'
+
+    @pytest.mark.parametrize("mode", ["first", "last", "all"], ids=["E5_first", "E5_last", "E5_all"])
+    def test_E5_vtsec_over_4kb(many_bins, mode):
+        """E5: vtable 200개로 vtsec 이 4KB 를 넘을 때 (ID 가 첫 페이지에만 있으면 last/all 에서 오탐)."""
+>       _same_and_clean(many_bins, mode, f"E5_{mode}")
+
+tests/test_false_positive.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+b = {'meta': {'check_va': '0x6000b0', 'code_va': '0x600000', 'hooked_vcalls': 3, 'id': '0xbf341d2332a44011', ...}, 'plain'...tmp/pytest-of-root/pytest-0/many0/many_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/many0/many_hardened')}
+mode = 'all', name = 'E5_all', timeout = 10
+
+    def _same_and_clean(b, mode, name, timeout=10):
+        before = run(b["plain"], mode, log_name=f"{name}_plain", timeout=timeout)
+        after = run(b["vtint"], mode, log_name=f"{name}_vtint", timeout=timeout)
+        assert before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None and not after.timed_out, f"보호 후 크래시: {after.summary()}\n{after.output}"
+>       assert MSG_DETECTED not in after.output, f"오탐:\n{after.output}"
+E       AssertionError: 오탐:
+E         VTINT DETECTED ID vfptr=0x0000000000504480 region=[r--p]
+E         
+E       assert 'VTINT DETECTED' not in 'VTINT DETEC...ion=[r--p]\n'
+E         
+E         'VTINT DETECTED' is contained here:
+E           VTINT DETECTED ID vfptr=0x0000000000504480 region=[r--p]
+E         ? ++++++++++++++
+
+tests/test_false_positive.py:38: AssertionError
+_____________________ test_C14_big_maps_no_false_positive ______________________
+
+harness = PosixPath('/tmp/pytest-of-root/pytest-0/unit0/check_harness')
+
+    def test_C14_big_maps_no_false_positive(harness):
+        """[13주차 반례 후보] /proc/self/maps 가 64KB(검사 루틴 버퍼)를 넘을 때.
+    
+        정상 vtable 페이지가 maps 뒤쪽에 있으면 버퍼에서 잘려 '매핑 없음 → READONLY' 오탐이 날 수 있다.
+        """
+>       _check(run(harness, "big_maps", log_name="C14_big_maps"), "PASS")
+
+tests/test_runtime_unit.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+res = RunResult(cmd=['/tmp/pytest-of-root/pytest-0/unit0/check_harness', 'big_maps'], exit_code=99, signal=None, stdout='ADD...pped]\n', timed_out=False, detections=[{'kind': 'READONLY', 'vfptr': 129947010088984, 'region': 'unmapped'}], leaks={})
+expect = 'PASS'
+
+    def _check(res, expect):
+        assert not res.timed_out, "시간 초과"
+        assert res.signal is None, f"검사 중 시그널로 죽음({res.signal}) — 크래시 없이 판정해야 함\n{res.output}"
+        if expect == "PASS":
+>           assert res.exit_code == EXIT_OK, f"오탐: {res.summary()}\n{res.output}"
+E           AssertionError: 오탐: 탐지 후 차단 (READONLY) / exit=99
+E             ADDR=0x762fa5604018
+E             VTINT DETECTED READONLY vfptr=0x0000762fa5604018 region=[unmapped]
+E             
+E           assert 99 == 0
+E            +  where 99 = RunResult(cmd=['/tmp/pytest-of-root/pytest-0/unit0/check_harness', 'big_maps'], exit_code=99, signal=None, stdout='ADD...pped]\n', timed_out=False, detections=[{'kind': 'READONLY', 'vfptr': 129947010088984, 'region': 'unmapped'}], leaks={}).exit_code
+
+tests/test_runtime_unit.py:67: AssertionError
+=============================== warnings summary ===============================
+../usr/local/lib/python3.10/dist-packages/capstone/__init__.py:379
+  /usr/local/lib/python3.10/dist-packages/capstone/__init__.py:379: DeprecationWarning: The distutils package is deprecated and slated for removal in Python 3.12. Use setuptools or check PEP 632 for potential alternatives
+    import distutils.sysconfig
+
+../usr/local/lib/python3.10/dist-packages/capstone/__init__.py:379
+  /usr/local/lib/python3.10/dist-packages/capstone/__init__.py:379: DeprecationWarning: The distutils.sysconfig module is deprecated, use sysconfig instead
+    import distutils.sysconfig
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_false_positive.py::test_E1_E2_classes[E2_multi_base2] - Ass...
+FAILED tests/test_false_positive.py::test_E5_vtsec_over_4kb[E5_first] - Asser...
+FAILED tests/test_false_positive.py::test_E5_vtsec_over_4kb[E5_all] - Asserti...
+FAILED tests/test_runtime_unit.py::test_C14_big_maps_no_false_positive - Asse...
+4 failed, 60 passed, 2 warnings in 12.71s

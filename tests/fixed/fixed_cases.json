@@ -1,0 +1,32 @@
+{
+  "_note": "11주차 보고서의 고정 검증 사례 3종. 수정 금지 (SHA256SUMS 로 확인). 입력은 victim 의 argv[1] 모드.",
+  "cases": [
+    {
+      "id": "normal",
+      "구분": "정상",
+      "input": "normal",
+      "입력": "오버플로가 없는 버퍼 크기 이하 입력. Base 포인터로 Derived 객체의 가상 함수를 호출",
+      "기대 결과": "보호 전후 모두 DERIVED RUN 출력 후 종료 코드 0. VTINT DETECTED 출력 없음",
+      "expect_plain": "정상 종료",
+      "expect_vtint": "정상 종료"
+    },
+    {
+      "id": "inject",
+      "구분": "위반",
+      "input": "inject",
+      "입력": "버퍼를 넘치게 써서 인접 객체의 vfptr 을 힙에 만든 가짜 vtable 주소로 덮는 입력 (vtable 주입)",
+      "기대 결과": "보호 전 HIJACKED 출력 후 종료 코드 66. 보호 후 VTINT DETECTED READONLY 와 vfptr 주소 출력 후 종료 코드 99 이며 HIJACKED 출력 없음",
+      "expect_plain": "제어 흐름 탈취",
+      "expect_vtint": "탐지 후 차단 (READONLY)"
+    },
+    {
+      "id": "rodata",
+      "구분": "경계",
+      "input": "rodata",
+      "입력": "vfptr 을 공격자 함수 주소가 담긴 const 함수 포인터 배열(.rodata) 주소로 덮는 입력. 읽기 전용이지만 vtable 이 아닌 위치",
+      "기대 결과": "보호 전 HIJACKED 출력 후 종료 코드 66. 보호 후 읽기 전용 검사는 통과하고 VTINT DETECTED ID 와 vfptr 주소 출력 후 종료 코드 99 이며 HIJACKED 출력 없음",
+      "expect_plain": "제어 흐름 탈취",
+      "expect_vtint": "탐지 후 차단 (ID)"
+    }
+  ]
+}

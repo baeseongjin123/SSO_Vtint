@@ -34,6 +34,13 @@ python3 tools/vrewriter.py out/victim_vuln out/victim_hardened   # [3] 재작성
 python3 tools/vtint.py judge out/victim_hardened inject          # 한 번 실행·판정
 ```
 
+### 테스트 실행 (자동 검증)
+정상·위반·경계 3사례를 보호 전·후로 실행해 기대 결과와 맞는지 자동으로 확인한다.
+```bash
+./docker-test.sh        # Windows(PowerShell) 명령은 tests/README.md 참고
+```
+결과 비교표: `results/before_after.md` · 자세한 실행 방법과 테스트 구성: [`tests/README.md`](tests/README.md)
+
 ---
 
 ## 2. 공격 대상과 방어 원리
