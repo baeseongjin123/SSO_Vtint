@@ -1,0 +1,11 @@
+$ /tmp/pytest-of-root/pytest-0/test_B_optimized_build_B1_O1_0/opt_h K_heap_slot0
+exit_code: 0
+signal: None
+timed_out: False
+verdict: 기타 (종료 코드 0)
+--- stdout ---
+DERIVED F0
+DERIVED DTOR
+
+--- stderr ---
+

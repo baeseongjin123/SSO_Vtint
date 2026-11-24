@@ -1,0 +1,10 @@
+$ /tmp/pytest-of-root/pytest-0/w130/w13_hardened K_ro_slot0
+exit_code: 99
+signal: None
+timed_out: False
+verdict: 탐지 후 차단 (ID)
+--- stdout ---
+
+--- stderr ---
+VTINT DETECTED ID vfptr=0x000072f029e42050 region=[r--p]
+

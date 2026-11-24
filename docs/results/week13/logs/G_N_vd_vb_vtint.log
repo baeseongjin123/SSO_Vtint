@@ -1,0 +1,9 @@
+$ /tmp/pytest-of-root/pytest-0/w130/w13_hardened N_vd_vb
+exit_code: None
+signal: 11
+timed_out: False
+verdict: 시그널 SIGSEGV
+--- stdout ---
+
+--- stderr ---
+

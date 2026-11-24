@@ -1,0 +1,684 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.12, pytest-8.3.3, pluggy-1.7.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /work
+configfile: pytest.ini
+testpaths: tests
+collecting ... collected 99 items
+
+tests/test_build.py::test_A1_no_pie PASSED                               [  1%]
+tests/test_build.py::test_A2_full_relro_kept PASSED                      [  2%]
+tests/test_build.py::test_A3_A4_vtsec_segment_aligned PASSED             [  3%]
+tests/test_build.py::test_A5_vtsec_readonly PASSED                       [  4%]
+tests/test_build.py::test_A6_check_code_segment PASSED                   [  5%]
+tests/test_build.py::test_A7_vtables_copied_into_vtsec PASSED            [  6%]
+tests/test_build.py::test_A7b_expected_classes_moved PASSED              [  7%]
+tests/test_build.py::test_A8_id_space_reserved PASSED                    [  8%]
+tests/test_build.py::test_A9_id_written PASSED                           [  9%]
+tests/test_build.py::test_A10_id_random_per_rewrite PASSED               [ 10%]
+tests/test_build.py::test_A11_plain_untouched PASSED                     [ 11%]
+tests/test_build.py::test_A12_every_vtable_page_has_id PASSED            [ 12%]
+tests/test_build.py::test_A13_instrumented PASSED                        [ 13%]
+tests/test_build.py::test_B1_vtsec_mapped_r__p PASSED                    [ 14%]
+tests/test_build.py::test_B2_check_code_mapped_r_xp PASSED               [ 15%]
+tests/test_build.py::test_B3_fake_vtable_is_writable PASSED              [ 16%]
+tests/test_build.py::test_B4_rodata_table_is_r__p PASSED                 [ 17%]
+tests/test_cases.py::test_case_files_complete PASSED                     [ 18%]
+tests/test_cases.py::test_normal_before_and_after[tc1] PASSED            [ 19%]
+tests/test_cases.py::test_inject_before_hijacked[tc1] PASSED             [ 20%]
+tests/test_cases.py::test_inject_after_readonly[tc1] PASSED              [ 21%]
+tests/test_cases.py::test_rodata_before_hijacked[tc1] PASSED             [ 22%]
+tests/test_cases.py::test_rodata_after_id[tc1] PASSED                    [ 23%]
+tests/test_cases.py::test_normal_before_and_after[tc2] PASSED            [ 24%]
+tests/test_cases.py::test_inject_before_hijacked[tc2] PASSED             [ 25%]
+tests/test_cases.py::test_inject_after_readonly[tc2] PASSED              [ 26%]
+tests/test_cases.py::test_rodata_before_hijacked[tc2] PASSED             [ 27%]
+tests/test_cases.py::test_rodata_after_id[tc2] PASSED                    [ 28%]
+tests/test_cases.py::test_normal_before_and_after[tc3] PASSED            [ 29%]
+tests/test_cases.py::test_inject_before_hijacked[tc3] PASSED             [ 30%]
+tests/test_cases.py::test_inject_after_readonly[tc3] PASSED              [ 31%]
+tests/test_cases.py::test_rodata_before_hijacked[tc3] PASSED             [ 32%]
+tests/test_cases.py::test_rodata_after_id[tc3] PASSED                    [ 33%]
+tests/test_false_positive.py::test_E1_E2_classes[E1_base] PASSED         [ 34%]
+tests/test_false_positive.py::test_E1_E2_classes[E1_derived] PASSED      [ 35%]
+tests/test_false_positive.py::test_E1_E2_classes[E1_other] PASSED        [ 36%]
+tests/test_false_positive.py::test_E1_E2_classes[E2_multi] PASSED        [ 37%]
+tests/test_false_positive.py::test_E1_E2_classes[E2_multi_base2] FAILED  [ 38%]
+tests/test_false_positive.py::test_E3_repeat_calls PASSED                [ 39%]
+tests/test_false_positive.py::test_E4_victim_normal_same_output PASSED   [ 40%]
+tests/test_false_positive.py::test_E5_vtsec_over_4kb[E5_first] FAILED    [ 41%]
+tests/test_false_positive.py::test_E5_vtsec_over_4kb[E5_last] PASSED     [ 42%]
+tests/test_false_positive.py::test_E5_vtsec_over_4kb[E5_all] FAILED      [ 43%]
+tests/test_fixed_cases.py::test_D1_D2_normal[plain] PASSED               [ 44%]
+tests/test_fixed_cases.py::test_D1_D2_normal[vtint] PASSED               [ 45%]
+tests/test_fixed_cases.py::test_D3_D5_attack_plain_hijacked[inject] PASSED [ 46%]
+tests/test_fixed_cases.py::test_D3_D5_attack_plain_hijacked[rodata] PASSED [ 47%]
+tests/test_fixed_cases.py::test_D4_inject_vtint_readonly PASSED          [ 48%]
+tests/test_fixed_cases.py::test_D6_rodata_vtint_id PASSED                [ 49%]
+tests/test_fixed_cases.py::test_D7_fixed_cases_unchanged PASSED          [ 50%]
+tests/test_runtime_unit.py::test_check_routine[C1_ro_id] PASSED          [ 51%]
+tests/test_runtime_unit.py::test_check_routine[C2_ro_id_page_end] PASSED [ 52%]
+tests/test_runtime_unit.py::test_check_routine[C3_heap] PASSED           [ 53%]
+tests/test_runtime_unit.py::test_check_routine[C4_stack] PASSED          [ 54%]
+tests/test_runtime_unit.py::test_check_routine[C5_data] PASSED           [ 55%]
+tests/test_runtime_unit.py::test_check_routine[C6_rodata] PASSED         [ 56%]
+tests/test_runtime_unit.py::test_check_routine[C7_code] PASSED           [ 57%]
+tests/test_runtime_unit.py::test_check_routine[C8_null] PASSED           [ 58%]
+tests/test_runtime_unit.py::test_check_routine[C9_unmapped] PASSED       [ 59%]
+tests/test_runtime_unit.py::test_check_routine[C10_rw_with_id] PASSED    [ 60%]
+tests/test_runtime_unit.py::test_check_routine[C11_ro_wrong_id] PASSED   [ 61%]
+tests/test_runtime_unit.py::test_check_routine[C12_rx_with_id] PASSED    [ 62%]
+tests/test_runtime_unit.py::test_check_routine[C13_second_page] PASSED   [ 63%]
+tests/test_runtime_unit.py::test_C14_big_maps_no_false_positive FAILED   [ 64%]
+tests/test_week13.py::test_G_week13[N_slot1] PASSED                      [ 65%]
+tests/test_week13.py::test_G_week13[N_slot3] PASSED                      [ 66%]
+tests/test_week13.py::test_G_week13[N_wide20] PASSED                     [ 67%]
+tests/test_week13.py::test_G_week13[N_vdtor] PASSED                      [ 68%]
+tests/test_week13.py::test_G_week13[N_args] PASSED                       [ 69%]
+tests/test_week13.py::test_G_week13[N_m3_pb] FAILED                      [ 70%]
+tests/test_week13.py::test_G_week13[N_m3_pc] FAILED                      [ 71%]
+tests/test_week13.py::test_G_week13[N_vd_vl] PASSED                      [ 72%]
+tests/test_week13.py::test_G_week13[N_vd_vr] FAILED                      [ 73%]
+tests/test_week13.py::test_G_week13[N_vd_vb] FAILED                      [ 74%]
+tests/test_week13.py::test_G_week13[N_abstract] PASSED                   [ 75%]
+tests/test_week13.py::test_G_week13[N_static] FAILED                     [ 76%]
+tests/test_week13.py::test_G_week13[N_lib_derived] PASSED                [ 77%]
+tests/test_week13.py::test_G_week13[N_lib_object] PASSED                 [ 78%]
+tests/test_week13.py::test_G_week13[N_threads] PASSED                    [ 79%]
+tests/test_week13.py::test_G_week13[N_small_stack] FAILED                [ 80%]
+tests/test_week13.py::test_G_week13[N_fd_exhausted] FAILED               [ 81%]
+tests/test_week13.py::test_G_week13[N_many_maps] PASSED                  [ 82%]
+tests/test_week13.py::test_G_week13[N_fork] PASSED                       [ 83%]
+tests/test_week13.py::test_G_week13[K_heap_slot0] PASSED                 [ 84%]
+tests/test_week13.py::test_G_week13[K_heap_slot1] FAILED                 [ 85%]
+tests/test_week13.py::test_G_week13[K_heap_slot3] FAILED                 [ 86%]
+tests/test_week13.py::test_G_week13[K_heap_wide20] FAILED                [ 87%]
+tests/test_week13.py::test_G_week13[K_heap_args] FAILED                  [ 88%]
+tests/test_week13.py::test_G_week13[K_heap_vdtor] FAILED                 [ 89%]
+tests/test_week13.py::test_G_week13[K_heap_m3_pb] PASSED                 [ 90%]
+tests/test_week13.py::test_G_week13[K_heap_m3_pc] PASSED                 [ 91%]
+tests/test_week13.py::test_G_week13[K_heap_vd_vr] PASSED                 [ 92%]
+tests/test_week13.py::test_G_week13[K_ro_slot0] PASSED                   [ 93%]
+tests/test_week13.py::test_G_week13[K_ro_slot1] FAILED                   [ 94%]
+tests/test_week13.py::test_G_week13[L_reuse] PASSED                      [ 95%]
+tests/test_week13.py::test_G_week13[L_mid] PASSED                        [ 96%]
+tests/test_week13.py::test_B_optimized_build[B1_O1] FAILED               [ 97%]
+tests/test_week13.py::test_B_optimized_build[B2_O2] FAILED               [ 98%]
+tests/test_week13.py::test_B3_pie_build FAILED                           [100%]
+
+=================================== FAILURES ===================================
+______________________ test_E1_E2_classes[E2_multi_base2] ______________________
+
+fp_bins = {'meta': {'check_va': '0x6000b0', 'code_va': '0x600000', 'hooked_vcalls': 6, 'id': '0x1844ee4fd0a8dc5f', ...}, 'plain'...xPath('/tmp/pytest-of-root/pytest-0/fp0/fp_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/fp0/fp_hardened')}
+mode = 'multi_base2'
+
+    @pytest.mark.parametrize(
+        "mode",
+        ["base", "derived", "other", "multi", "multi_base2"],
+        ids=["E1_base", "E1_derived", "E1_other", "E2_multi", "E2_multi_base2"],
+    )
+    def test_E1_E2_classes(fp_bins, mode):
+        """E1/E2: 클래스별 정상 가상 호출 (E2 는 다중 상속, multi_base2 는 2차 vptr)."""
+>       _same_and_clean(fp_bins, mode, f"E_{mode}")
+
+tests/test_false_positive.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+b = {'meta': {'check_va': '0x6000b0', 'code_va': '0x600000', 'hooked_vcalls': 6, 'id': '0x1844ee4fd0a8dc5f', ...}, 'plain'...xPath('/tmp/pytest-of-root/pytest-0/fp0/fp_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/fp0/fp_hardened')}
+mode = 'multi_base2', name = 'E_multi_base2', timeout = 10
+
+    def _same_and_clean(b, mode, name, timeout=10):
+        before = run(b["plain"], mode, log_name=f"{name}_plain", timeout=timeout)
+        after = run(b["vtint"], mode, log_name=f"{name}_vtint", timeout=timeout)
+        assert before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None and not after.timed_out, f"보호 후 크래시: {after.summary()}\n{after.output}"
+>       assert MSG_DETECTED not in after.output, f"오탐:\n{after.output}"
+E       AssertionError: 오탐:
+E         VTINT DETECTED ID vfptr=0x0000000000402090 region=[r--p]
+E         
+E       assert 'VTINT DETECTED' not in 'VTINT DETEC...ion=[r--p]\n'
+E         
+E         'VTINT DETECTED' is contained here:
+E           VTINT DETECTED ID vfptr=0x0000000000402090 region=[r--p]
+E         ? ++++++++++++++
+
+tests/test_false_positive.py:38: AssertionError
+_______________________ test_E5_vtsec_over_4kb[E5_first] _______________________
+
+many_bins = {'meta': {'check_va': '0x6000b0', 'code_va': '0x600000', 'hooked_vcalls': 3, 'id': '0x74ea9ab1bdede295', ...}, 'plain'...tmp/pytest-of-root/pytest-0/many0/many_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/many0/many_hardened')}
+mode = 'first'
+
+    @pytest.mark.parametrize("mode", ["first", "last", "all"], ids=["E5_first", "E5_last", "E5_all"])
+    def test_E5_vtsec_over_4kb(many_bins, mode):
+        """E5: vtable 200개로 vtsec 이 4KB 를 넘을 때 (ID 가 첫 페이지에만 있으면 last/all 에서 오탐)."""
+>       _same_and_clean(many_bins, mode, f"E5_{mode}")
+
+tests/test_false_positive.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+b = {'meta': {'check_va': '0x6000b0', 'code_va': '0x600000', 'hooked_vcalls': 3, 'id': '0x74ea9ab1bdede295', ...}, 'plain'...tmp/pytest-of-root/pytest-0/many0/many_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/many0/many_hardened')}
+mode = 'first', name = 'E5_first', timeout = 10
+
+    def _same_and_clean(b, mode, name, timeout=10):
+        before = run(b["plain"], mode, log_name=f"{name}_plain", timeout=timeout)
+        after = run(b["vtint"], mode, log_name=f"{name}_vtint", timeout=timeout)
+        assert before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None and not after.timed_out, f"보호 후 크래시: {after.summary()}\n{after.output}"
+>       assert MSG_DETECTED not in after.output, f"오탐:\n{after.output}"
+E       AssertionError: 오탐:
+E         VTINT DETECTED ID vfptr=0x0000000000504480 region=[r--p]
+E         
+E       assert 'VTINT DETECTED' not in 'VTINT DETEC...ion=[r--p]\n'
+E         
+E         'VTINT DETECTED' is contained here:
+E           VTINT DETECTED ID vfptr=0x0000000000504480 region=[r--p]
+E         ? ++++++++++++++
+
+tests/test_false_positive.py:38: AssertionError
+________________________ test_E5_vtsec_over_4kb[E5_all] ________________________
+
+many_bins = {'meta': {'check_va': '0x6000b0', 'code_va': '0x600000', 'hooked_vcalls': 3, 'id': '0x74ea9ab1bdede295', ...}, 'plain'...tmp/pytest-of-root/pytest-0/many0/many_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/many0/many_hardened')}
+mode = 'all'
+
+    @pytest.mark.parametrize("mode", ["first", "last", "all"], ids=["E5_first", "E5_last", "E5_all"])
+    def test_E5_vtsec_over_4kb(many_bins, mode):
+        """E5: vtable 200개로 vtsec 이 4KB 를 넘을 때 (ID 가 첫 페이지에만 있으면 last/all 에서 오탐)."""
+>       _same_and_clean(many_bins, mode, f"E5_{mode}")
+
+tests/test_false_positive.py:67: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+b = {'meta': {'check_va': '0x6000b0', 'code_va': '0x600000', 'hooked_vcalls': 3, 'id': '0x74ea9ab1bdede295', ...}, 'plain'...tmp/pytest-of-root/pytest-0/many0/many_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/many0/many_hardened')}
+mode = 'all', name = 'E5_all', timeout = 10
+
+    def _same_and_clean(b, mode, name, timeout=10):
+        before = run(b["plain"], mode, log_name=f"{name}_plain", timeout=timeout)
+        after = run(b["vtint"], mode, log_name=f"{name}_vtint", timeout=timeout)
+        assert before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None and not after.timed_out, f"보호 후 크래시: {after.summary()}\n{after.output}"
+>       assert MSG_DETECTED not in after.output, f"오탐:\n{after.output}"
+E       AssertionError: 오탐:
+E         VTINT DETECTED ID vfptr=0x0000000000504480 region=[r--p]
+E         
+E       assert 'VTINT DETECTED' not in 'VTINT DETEC...ion=[r--p]\n'
+E         
+E         'VTINT DETECTED' is contained here:
+E           VTINT DETECTED ID vfptr=0x0000000000504480 region=[r--p]
+E         ? ++++++++++++++
+
+tests/test_false_positive.py:38: AssertionError
+_____________________ test_C14_big_maps_no_false_positive ______________________
+
+harness = PosixPath('/tmp/pytest-of-root/pytest-0/unit0/check_harness')
+
+    def test_C14_big_maps_no_false_positive(harness):
+        """[13주차 반례 후보] /proc/self/maps 가 64KB(검사 루틴 버퍼)를 넘을 때.
+    
+        정상 vtable 페이지가 maps 뒤쪽에 있으면 버퍼에서 잘려 '매핑 없음 → READONLY' 오탐이 날 수 있다.
+        """
+>       _check(run(harness, "big_maps", log_name="C14_big_maps"), "PASS")
+
+tests/test_runtime_unit.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+res = RunResult(cmd=['/tmp/pytest-of-root/pytest-0/unit0/check_harness', 'big_maps'], exit_code=99, signal=None, stdout='ADD...pped]\n', timed_out=False, detections=[{'kind': 'READONLY', 'vfptr': 140549377466392, 'region': 'unmapped'}], leaks={})
+expect = 'PASS'
+
+    def _check(res, expect):
+        assert not res.timed_out, "시간 초과"
+        assert res.signal is None, f"검사 중 시그널로 죽음({res.signal}) — 크래시 없이 판정해야 함\n{res.output}"
+        if expect == "PASS":
+>           assert res.exit_code == EXIT_OK, f"오탐: {res.summary()}\n{res.output}"
+E           AssertionError: 오탐: 탐지 후 차단 (READONLY) / exit=99
+E             ADDR=0x7fd433b7a018
+E             VTINT DETECTED READONLY vfptr=0x00007fd433b7a018 region=[unmapped]
+E             
+E           assert 99 == 0
+E            +  where 99 = RunResult(cmd=['/tmp/pytest-of-root/pytest-0/unit0/check_harness', 'big_maps'], exit_code=99, signal=None, stdout='ADDR=0x7fd433b7a018\n', stderr='VTINT DETECTED READONLY vfptr=0x00007fd433b7a018 region=[unmapped]\n', timed_out=False, detections=[{'kind': 'READONLY', 'vfptr': 140549377466392, 'region': 'unmapped'}], leaks={}).exit_code
+
+tests/test_runtime_unit.py:67: AssertionError
+____________________________ test_G_week13[N_m3_pb] ____________________________
+
+w13 = {'plain': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_hardened')}
+mode = 'N_m3_pb'
+
+    @pytest.mark.parametrize("mode", list(EXPECT), ids=list(EXPECT))
+    def test_G_week13(w13, mode):
+        kind, check, desc = EXPECT[mode]
+        before = run(w13["plain"], mode, log_name=f"G_{mode}_plain")
+        after = run(w13["vtint"], mode, log_name=f"G_{mode}_vtint")
+        _ROWS.append((mode, desc, kind, check, before, after))
+    
+        # 보호 전: 모든 모드가 정상 종료해야 테스트 프로그램이 올바른 것
+        assert before.signal is None and before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None, f"보호 후 크래시 (시그널 {after.signal}) — 정상 동작을 깨뜨림\n{after.output}"
+        assert not after.timed_out, "보호 후 시간 초과"
+        assert MSG_HIJACKED not in after.output
+    
+        if kind in ("normal", "limit"):
+>           assert MSG_DETECTED not in after.output, f"오탐: {_first_line(after, MSG_DETECTED)}"
+E           AssertionError: 오탐: VTINT DETECTED ID vfptr=0x00000000004054a8 region=[r--p]
+E           assert 'VTINT DETECTED' not in 'VTINT DETEC...ion=[r--p]\n'
+E             
+E             'VTINT DETECTED' is contained here:
+E               VTINT DETECTED ID vfptr=0x00000000004054a8 region=[r--p]
+E             ? ++++++++++++++
+
+tests/test_week13.py:110: AssertionError
+____________________________ test_G_week13[N_m3_pc] ____________________________
+
+w13 = {'plain': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_hardened')}
+mode = 'N_m3_pc'
+
+    @pytest.mark.parametrize("mode", list(EXPECT), ids=list(EXPECT))
+    def test_G_week13(w13, mode):
+        kind, check, desc = EXPECT[mode]
+        before = run(w13["plain"], mode, log_name=f"G_{mode}_plain")
+        after = run(w13["vtint"], mode, log_name=f"G_{mode}_vtint")
+        _ROWS.append((mode, desc, kind, check, before, after))
+    
+        # 보호 전: 모든 모드가 정상 종료해야 테스트 프로그램이 올바른 것
+        assert before.signal is None and before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None, f"보호 후 크래시 (시그널 {after.signal}) — 정상 동작을 깨뜨림\n{after.output}"
+        assert not after.timed_out, "보호 후 시간 초과"
+        assert MSG_HIJACKED not in after.output
+    
+        if kind in ("normal", "limit"):
+>           assert MSG_DETECTED not in after.output, f"오탐: {_first_line(after, MSG_DETECTED)}"
+E           AssertionError: 오탐: VTINT DETECTED ID vfptr=0x00000000004054d0 region=[r--p]
+E           assert 'VTINT DETECTED' not in 'VTINT DETEC...ion=[r--p]\n'
+E             
+E             'VTINT DETECTED' is contained here:
+E               VTINT DETECTED ID vfptr=0x00000000004054d0 region=[r--p]
+E             ? ++++++++++++++
+
+tests/test_week13.py:110: AssertionError
+____________________________ test_G_week13[N_vd_vr] ____________________________
+
+w13 = {'plain': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_hardened')}
+mode = 'N_vd_vr'
+
+    @pytest.mark.parametrize("mode", list(EXPECT), ids=list(EXPECT))
+    def test_G_week13(w13, mode):
+        kind, check, desc = EXPECT[mode]
+        before = run(w13["plain"], mode, log_name=f"G_{mode}_plain")
+        after = run(w13["vtint"], mode, log_name=f"G_{mode}_vtint")
+        _ROWS.append((mode, desc, kind, check, before, after))
+    
+        # 보호 전: 모든 모드가 정상 종료해야 테스트 프로그램이 올바른 것
+        assert before.signal is None and before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None, f"보호 후 크래시 (시그널 {after.signal}) — 정상 동작을 깨뜨림\n{after.output}"
+        assert not after.timed_out, "보호 후 시간 초과"
+        assert MSG_HIJACKED not in after.output
+    
+        if kind in ("normal", "limit"):
+>           assert MSG_DETECTED not in after.output, f"오탐: {_first_line(after, MSG_DETECTED)}"
+E           AssertionError: 오탐: VTINT DETECTED ID vfptr=0x00000000004051f0 region=[r--p]
+E           assert 'VTINT DETECTED' not in 'VTINT DETEC...ion=[r--p]\n'
+E             
+E             'VTINT DETECTED' is contained here:
+E               VTINT DETECTED ID vfptr=0x00000000004051f0 region=[r--p]
+E             ? ++++++++++++++
+
+tests/test_week13.py:110: AssertionError
+____________________________ test_G_week13[N_vd_vb] ____________________________
+
+w13 = {'plain': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_hardened')}
+mode = 'N_vd_vb'
+
+    @pytest.mark.parametrize("mode", list(EXPECT), ids=list(EXPECT))
+    def test_G_week13(w13, mode):
+        kind, check, desc = EXPECT[mode]
+        before = run(w13["plain"], mode, log_name=f"G_{mode}_plain")
+        after = run(w13["vtint"], mode, log_name=f"G_{mode}_vtint")
+        _ROWS.append((mode, desc, kind, check, before, after))
+    
+        # 보호 전: 모든 모드가 정상 종료해야 테스트 프로그램이 올바른 것
+        assert before.signal is None and before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+>       assert after.signal is None, f"보호 후 크래시 (시그널 {after.signal}) — 정상 동작을 깨뜨림\n{after.output}"
+E       AssertionError: 보호 후 크래시 (시그널 11) — 정상 동작을 깨뜨림
+E         
+E       assert 11 is None
+E        +  where 11 = RunResult(cmd=['/tmp/pytest-of-root/pytest-0/w130/w13_hardened', 'N_vd_vb'], exit_code=None, signal=11, stdout='', stderr='', timed_out=False, detections=[], leaks={}).signal
+
+tests/test_week13.py:105: AssertionError
+___________________________ test_G_week13[N_static] ____________________________
+
+w13 = {'plain': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_hardened')}
+mode = 'N_static'
+
+    @pytest.mark.parametrize("mode", list(EXPECT), ids=list(EXPECT))
+    def test_G_week13(w13, mode):
+        kind, check, desc = EXPECT[mode]
+        before = run(w13["plain"], mode, log_name=f"G_{mode}_plain")
+        after = run(w13["vtint"], mode, log_name=f"G_{mode}_vtint")
+        _ROWS.append((mode, desc, kind, check, before, after))
+    
+        # 보호 전: 모든 모드가 정상 종료해야 테스트 프로그램이 올바른 것
+        assert before.signal is None and before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None, f"보호 후 크래시 (시그널 {after.signal}) — 정상 동작을 깨뜨림\n{after.output}"
+        assert not after.timed_out, "보호 후 시간 초과"
+        assert MSG_HIJACKED not in after.output
+    
+        if kind in ("normal", "limit"):
+>           assert MSG_DETECTED not in after.output, f"오탐: {_first_line(after, MSG_DETECTED)}"
+E           AssertionError: 오탐: VTINT DETECTED ID vfptr=0x0000000000405638 region=[r--p]
+E           assert 'VTINT DETECTED' not in 'VTINT DETEC...ion=[r--p]\n'
+E             
+E             'VTINT DETECTED' is contained here:
+E               VTINT DETECTED ID vfptr=0x0000000000405638 region=[r--p]
+E             ? ++++++++++++++
+
+tests/test_week13.py:110: AssertionError
+_________________________ test_G_week13[N_small_stack] _________________________
+
+w13 = {'plain': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_hardened')}
+mode = 'N_small_stack'
+
+    @pytest.mark.parametrize("mode", list(EXPECT), ids=list(EXPECT))
+    def test_G_week13(w13, mode):
+        kind, check, desc = EXPECT[mode]
+        before = run(w13["plain"], mode, log_name=f"G_{mode}_plain")
+        after = run(w13["vtint"], mode, log_name=f"G_{mode}_vtint")
+        _ROWS.append((mode, desc, kind, check, before, after))
+    
+        # 보호 전: 모든 모드가 정상 종료해야 테스트 프로그램이 올바른 것
+        assert before.signal is None and before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+>       assert after.signal is None, f"보호 후 크래시 (시그널 {after.signal}) — 정상 동작을 깨뜨림\n{after.output}"
+E       AssertionError: 보호 후 크래시 (시그널 11) — 정상 동작을 깨뜨림
+E         
+E       assert 11 is None
+E        +  where 11 = RunResult(cmd=['/tmp/pytest-of-root/pytest-0/w130/w13_hardened', 'N_small_stack'], exit_code=None, signal=11, stdout='', stderr='', timed_out=False, detections=[], leaks={}).signal
+
+tests/test_week13.py:105: AssertionError
+________________________ test_G_week13[N_fd_exhausted] _________________________
+
+w13 = {'plain': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_hardened')}
+mode = 'N_fd_exhausted'
+
+    @pytest.mark.parametrize("mode", list(EXPECT), ids=list(EXPECT))
+    def test_G_week13(w13, mode):
+        kind, check, desc = EXPECT[mode]
+        before = run(w13["plain"], mode, log_name=f"G_{mode}_plain")
+        after = run(w13["vtint"], mode, log_name=f"G_{mode}_vtint")
+        _ROWS.append((mode, desc, kind, check, before, after))
+    
+        # 보호 전: 모든 모드가 정상 종료해야 테스트 프로그램이 올바른 것
+        assert before.signal is None and before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None, f"보호 후 크래시 (시그널 {after.signal}) — 정상 동작을 깨뜨림\n{after.output}"
+        assert not after.timed_out, "보호 후 시간 초과"
+        assert MSG_HIJACKED not in after.output
+    
+        if kind in ("normal", "limit"):
+>           assert MSG_DETECTED not in after.output, f"오탐: {_first_line(after, MSG_DETECTED)}"
+E           AssertionError: 오탐: VTINT DETECTED READONLY vfptr=0x0000000000500268 region=[unmapped]
+E           assert 'VTINT DETECTED' not in 'VTINT DETEC...[unmapped]\n'
+E             
+E             'VTINT DETECTED' is contained here:
+E               VTINT DETECTED READONLY vfptr=0x0000000000500268 region=[unmapped]
+E             ? ++++++++++++++
+
+tests/test_week13.py:110: AssertionError
+_________________________ test_G_week13[K_heap_slot1] __________________________
+
+w13 = {'plain': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_hardened')}
+mode = 'K_heap_slot1'
+
+    @pytest.mark.parametrize("mode", list(EXPECT), ids=list(EXPECT))
+    def test_G_week13(w13, mode):
+        kind, check, desc = EXPECT[mode]
+        before = run(w13["plain"], mode, log_name=f"G_{mode}_plain")
+        after = run(w13["vtint"], mode, log_name=f"G_{mode}_vtint")
+        _ROWS.append((mode, desc, kind, check, before, after))
+    
+        # 보호 전: 모든 모드가 정상 종료해야 테스트 프로그램이 올바른 것
+        assert before.signal is None and before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None, f"보호 후 크래시 (시그널 {after.signal}) — 정상 동작을 깨뜨림\n{after.output}"
+        assert not after.timed_out, "보호 후 시간 초과"
+        assert MSG_HIJACKED not in after.output
+    
+        if kind in ("normal", "limit"):
+            assert MSG_DETECTED not in after.output, f"오탐: {_first_line(after, MSG_DETECTED)}"
+            assert after.exit_code == EXIT_OK, after.summary()
+            assert after.stdout == before.stdout, "보호 후 출력이 달라짐"
+        else:
+>           assert after.exit_code == EXIT_DETECTED, (
+                f"미탐(계측 누락): 보호 후에도 그대로 실행됨 → {_first_line(after)!r}")
+E           AssertionError: 미탐(계측 누락): 보호 후에도 그대로 실행됨 → 'DERIVED F1'
+E           assert 0 == 99
+E            +  where 0 = RunResult(cmd=['/tmp/pytest-of-root/pytest-0/w130/w13_hardened', 'K_heap_slot1'], exit_code=0, signal=None, stdout='DERIVED F1\nDERIVED DTOR\n', stderr='', timed_out=False, detections=[], leaks={}).exit_code
+
+tests/test_week13.py:114: AssertionError
+_________________________ test_G_week13[K_heap_slot3] __________________________
+
+w13 = {'plain': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_hardened')}
+mode = 'K_heap_slot3'
+
+    @pytest.mark.parametrize("mode", list(EXPECT), ids=list(EXPECT))
+    def test_G_week13(w13, mode):
+        kind, check, desc = EXPECT[mode]
+        before = run(w13["plain"], mode, log_name=f"G_{mode}_plain")
+        after = run(w13["vtint"], mode, log_name=f"G_{mode}_vtint")
+        _ROWS.append((mode, desc, kind, check, before, after))
+    
+        # 보호 전: 모든 모드가 정상 종료해야 테스트 프로그램이 올바른 것
+        assert before.signal is None and before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None, f"보호 후 크래시 (시그널 {after.signal}) — 정상 동작을 깨뜨림\n{after.output}"
+        assert not after.timed_out, "보호 후 시간 초과"
+        assert MSG_HIJACKED not in after.output
+    
+        if kind in ("normal", "limit"):
+            assert MSG_DETECTED not in after.output, f"오탐: {_first_line(after, MSG_DETECTED)}"
+            assert after.exit_code == EXIT_OK, after.summary()
+            assert after.stdout == before.stdout, "보호 후 출력이 달라짐"
+        else:
+>           assert after.exit_code == EXIT_DETECTED, (
+                f"미탐(계측 누락): 보호 후에도 그대로 실행됨 → {_first_line(after)!r}")
+E           AssertionError: 미탐(계측 누락): 보호 후에도 그대로 실행됨 → 'DERIVED F3'
+E           assert 0 == 99
+E            +  where 0 = RunResult(cmd=['/tmp/pytest-of-root/pytest-0/w130/w13_hardened', 'K_heap_slot3'], exit_code=0, signal=None, stdout='DERIVED F3\nDERIVED DTOR\n', stderr='', timed_out=False, detections=[], leaks={}).exit_code
+
+tests/test_week13.py:114: AssertionError
+_________________________ test_G_week13[K_heap_wide20] _________________________
+
+w13 = {'plain': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_hardened')}
+mode = 'K_heap_wide20'
+
+    @pytest.mark.parametrize("mode", list(EXPECT), ids=list(EXPECT))
+    def test_G_week13(w13, mode):
+        kind, check, desc = EXPECT[mode]
+        before = run(w13["plain"], mode, log_name=f"G_{mode}_plain")
+        after = run(w13["vtint"], mode, log_name=f"G_{mode}_vtint")
+        _ROWS.append((mode, desc, kind, check, before, after))
+    
+        # 보호 전: 모든 모드가 정상 종료해야 테스트 프로그램이 올바른 것
+        assert before.signal is None and before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None, f"보호 후 크래시 (시그널 {after.signal}) — 정상 동작을 깨뜨림\n{after.output}"
+        assert not after.timed_out, "보호 후 시간 초과"
+        assert MSG_HIJACKED not in after.output
+    
+        if kind in ("normal", "limit"):
+            assert MSG_DETECTED not in after.output, f"오탐: {_first_line(after, MSG_DETECTED)}"
+            assert after.exit_code == EXIT_OK, after.summary()
+            assert after.stdout == before.stdout, "보호 후 출력이 달라짐"
+        else:
+>           assert after.exit_code == EXIT_DETECTED, (
+                f"미탐(계측 누락): 보호 후에도 그대로 실행됨 → {_first_line(after)!r}")
+E           AssertionError: 미탐(계측 누락): 보호 후에도 그대로 실행됨 → 'WIDE W20'
+E           assert 0 == 99
+E            +  where 0 = RunResult(cmd=['/tmp/pytest-of-root/pytest-0/w130/w13_hardened', 'K_heap_wide20'], exit_code=0, signal=None, stdout='WIDE W20\nDERIVED DTOR\n', stderr='', timed_out=False, detections=[], leaks={}).exit_code
+
+tests/test_week13.py:114: AssertionError
+__________________________ test_G_week13[K_heap_args] __________________________
+
+w13 = {'plain': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_hardened')}
+mode = 'K_heap_args'
+
+    @pytest.mark.parametrize("mode", list(EXPECT), ids=list(EXPECT))
+    def test_G_week13(w13, mode):
+        kind, check, desc = EXPECT[mode]
+        before = run(w13["plain"], mode, log_name=f"G_{mode}_plain")
+        after = run(w13["vtint"], mode, log_name=f"G_{mode}_vtint")
+        _ROWS.append((mode, desc, kind, check, before, after))
+    
+        # 보호 전: 모든 모드가 정상 종료해야 테스트 프로그램이 올바른 것
+        assert before.signal is None and before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None, f"보호 후 크래시 (시그널 {after.signal}) — 정상 동작을 깨뜨림\n{after.output}"
+        assert not after.timed_out, "보호 후 시간 초과"
+        assert MSG_HIJACKED not in after.output
+    
+        if kind in ("normal", "limit"):
+            assert MSG_DETECTED not in after.output, f"오탐: {_first_line(after, MSG_DETECTED)}"
+            assert after.exit_code == EXIT_OK, after.summary()
+            assert after.stdout == before.stdout, "보호 후 출력이 달라짐"
+        else:
+>           assert after.exit_code == EXIT_DETECTED, (
+                f"미탐(계측 누락): 보호 후에도 그대로 실행됨 → {_first_line(after)!r}")
+E           AssertionError: 미탐(계측 누락): 보호 후에도 그대로 실행됨 → 'SUM6 108642'
+E           assert 0 == 99
+E            +  where 0 = RunResult(cmd=['/tmp/pytest-of-root/pytest-0/w130/w13_hardened', 'K_heap_args'], exit_code=0, signal=None, stdout='SUM6 108642\nDERIVED DTOR\n', stderr='', timed_out=False, detections=[], leaks={}).exit_code
+
+tests/test_week13.py:114: AssertionError
+_________________________ test_G_week13[K_heap_vdtor] __________________________
+
+w13 = {'plain': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_hardened')}
+mode = 'K_heap_vdtor'
+
+    @pytest.mark.parametrize("mode", list(EXPECT), ids=list(EXPECT))
+    def test_G_week13(w13, mode):
+        kind, check, desc = EXPECT[mode]
+        before = run(w13["plain"], mode, log_name=f"G_{mode}_plain")
+        after = run(w13["vtint"], mode, log_name=f"G_{mode}_vtint")
+        _ROWS.append((mode, desc, kind, check, before, after))
+    
+        # 보호 전: 모든 모드가 정상 종료해야 테스트 프로그램이 올바른 것
+        assert before.signal is None and before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None, f"보호 후 크래시 (시그널 {after.signal}) — 정상 동작을 깨뜨림\n{after.output}"
+        assert not after.timed_out, "보호 후 시간 초과"
+        assert MSG_HIJACKED not in after.output
+    
+        if kind in ("normal", "limit"):
+            assert MSG_DETECTED not in after.output, f"오탐: {_first_line(after, MSG_DETECTED)}"
+            assert after.exit_code == EXIT_OK, after.summary()
+            assert after.stdout == before.stdout, "보호 후 출력이 달라짐"
+        else:
+>           assert after.exit_code == EXIT_DETECTED, (
+                f"미탐(계측 누락): 보호 후에도 그대로 실행됨 → {_first_line(after)!r}")
+E           AssertionError: 미탐(계측 누락): 보호 후에도 그대로 실행됨 → 'DERIVED DTOR'
+E           assert 0 == 99
+E            +  where 0 = RunResult(cmd=['/tmp/pytest-of-root/pytest-0/w130/w13_hardened', 'K_heap_vdtor'], exit_code=0, signal=None, stdout='DERIVED DTOR\nDERIVED DTOR\n', stderr='', timed_out=False, detections=[], leaks={}).exit_code
+
+tests/test_week13.py:114: AssertionError
+__________________________ test_G_week13[K_ro_slot1] ___________________________
+
+w13 = {'plain': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_plain'), 'vtint': PosixPath('/tmp/pytest-of-root/pytest-0/w130/w13_hardened')}
+mode = 'K_ro_slot1'
+
+    @pytest.mark.parametrize("mode", list(EXPECT), ids=list(EXPECT))
+    def test_G_week13(w13, mode):
+        kind, check, desc = EXPECT[mode]
+        before = run(w13["plain"], mode, log_name=f"G_{mode}_plain")
+        after = run(w13["vtint"], mode, log_name=f"G_{mode}_vtint")
+        _ROWS.append((mode, desc, kind, check, before, after))
+    
+        # 보호 전: 모든 모드가 정상 종료해야 테스트 프로그램이 올바른 것
+        assert before.signal is None and before.exit_code == EXIT_OK, f"보호 전부터 비정상: {before.summary()}"
+        assert after.signal is None, f"보호 후 크래시 (시그널 {after.signal}) — 정상 동작을 깨뜨림\n{after.output}"
+        assert not after.timed_out, "보호 후 시간 초과"
+        assert MSG_HIJACKED not in after.output
+    
+        if kind in ("normal", "limit"):
+            assert MSG_DETECTED not in after.output, f"오탐: {_first_line(after, MSG_DETECTED)}"
+            assert after.exit_code == EXIT_OK, after.summary()
+            assert after.stdout == before.stdout, "보호 후 출력이 달라짐"
+        else:
+>           assert after.exit_code == EXIT_DETECTED, (
+                f"미탐(계측 누락): 보호 후에도 그대로 실행됨 → {_first_line(after)!r}")
+E           AssertionError: 미탐(계측 누락): 보호 후에도 그대로 실행됨 → 'DERIVED F1'
+E           assert 0 == 99
+E            +  where 0 = RunResult(cmd=['/tmp/pytest-of-root/pytest-0/w130/w13_hardened', 'K_ro_slot1'], exit_code=0, signal=None, stdout='DERIVED F1\nDERIVED DTOR\n', stderr='', timed_out=False, detections=[], leaks={}).exit_code
+
+tests/test_week13.py:114: AssertionError
+________________________ test_B_optimized_build[B1_O1] _________________________
+
+pipeline = {'check_va': '0x6000b0', 'code_va': '0x600000', 'hooked_vcalls': 1, 'id': '0xadbda5058bebe8e6', ...}
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_B_optimized_build_B1_O1_0')
+opt = '-O1'
+
+    @pytest.mark.parametrize("opt", ["-O1", "-O2"], ids=["B1_O1", "B2_O2"])
+    def test_B_optimized_build(pipeline, tmp_path, opt):
+        """최적화 빌드: 계측된 호출이 있어야 하고, 사본 vtable 호출은 탐지돼야 한다. 못 하면 도구가 거부해야 한다."""
+        plain = _build(tmp_path, "opt", ["-no-pie", "-fno-pie", opt])
+        p = _rewrite_or_refuse(plain, tmp_path / "opt_h")
+        if p.returncode != 0:
+            pytest.skip(f"도구가 {opt} 입력을 명시적으로 거부함 (허용되는 처리): {p.stderr.strip()[-200:]}")
+        after = run(tmp_path / "opt_h", "K_heap_slot0", log_name=f"G_B_{opt}_K_heap_slot0")
+>       assert after.exit_code == EXIT_DETECTED, (
+            f"{opt}: 재작성은 '성공'했지만 가상 호출이 하나도 검사되지 않음 → {_first_line(after)!r}")
+E       AssertionError: -O1: 재작성은 '성공'했지만 가상 호출이 하나도 검사되지 않음 → 'DERIVED F0'
+E       assert 0 == 99
+E        +  where 0 = RunResult(cmd=['/tmp/pytest-of-root/pytest-0/test_B_optimized_build_B1_O1_0/opt_h', 'K_heap_slot0'], exit_code=0, signal=None, stdout='DERIVED F0\nDERIVED DTOR\n', stderr='', timed_out=False, detections=[], leaks={}).exit_code
+
+tests/test_week13.py:147: AssertionError
+________________________ test_B_optimized_build[B2_O2] _________________________
+
+pipeline = {'check_va': '0x6000b0', 'code_va': '0x600000', 'hooked_vcalls': 1, 'id': '0xadbda5058bebe8e6', ...}
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_B_optimized_build_B2_O2_0')
+opt = '-O2'
+
+    @pytest.mark.parametrize("opt", ["-O1", "-O2"], ids=["B1_O1", "B2_O2"])
+    def test_B_optimized_build(pipeline, tmp_path, opt):
+        """최적화 빌드: 계측된 호출이 있어야 하고, 사본 vtable 호출은 탐지돼야 한다. 못 하면 도구가 거부해야 한다."""
+        plain = _build(tmp_path, "opt", ["-no-pie", "-fno-pie", opt])
+        p = _rewrite_or_refuse(plain, tmp_path / "opt_h")
+        if p.returncode != 0:
+            pytest.skip(f"도구가 {opt} 입력을 명시적으로 거부함 (허용되는 처리): {p.stderr.strip()[-200:]}")
+        after = run(tmp_path / "opt_h", "K_heap_slot0", log_name=f"G_B_{opt}_K_heap_slot0")
+>       assert after.exit_code == EXIT_DETECTED, (
+            f"{opt}: 재작성은 '성공'했지만 가상 호출이 하나도 검사되지 않음 → {_first_line(after)!r}")
+E       AssertionError: -O2: 재작성은 '성공'했지만 가상 호출이 하나도 검사되지 않음 → 'DERIVED F0'
+E       assert 0 == 99
+E        +  where 0 = RunResult(cmd=['/tmp/pytest-of-root/pytest-0/test_B_optimized_build_B2_O2_0/opt_h', 'K_heap_slot0'], exit_code=0, signal=None, stdout='DERIVED F0\nDERIVED DTOR\n', stderr='', timed_out=False, detections=[], leaks={}).exit_code
+
+tests/test_week13.py:147: AssertionError
+______________________________ test_B3_pie_build _______________________________
+
+pipeline = {'check_va': '0x6000b0', 'code_va': '0x600000', 'hooked_vcalls': 1, 'id': '0xadbda5058bebe8e6', ...}
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_B3_pie_build0')
+
+    def test_B3_pie_build(pipeline, tmp_path):
+        """PIE 빌드: 지원하지 않으면 거부해야 하고, 재작성했다면 정상 입력이 그대로 동작해야 한다."""
+        plain = _build(tmp_path, "pie", ["-pie", "-fPIE", "-O0"])
+        p = _rewrite_or_refuse(plain, tmp_path / "pie_h")
+        if p.returncode != 0:
+            pytest.skip(f"도구가 PIE 를 명시적으로 거부함 (허용되는 처리): {p.stderr.strip()[-200:]}")
+        after = run(tmp_path / "pie_h", "N_slot1", log_name="G_B_pie_N_slot1")
+>       assert after.signal is None and after.exit_code == EXIT_OK, (
+            f"PIE: 재작성은 '성공'(exit 0)했지만 결과 바이너리가 정상 입력에서 {after.summary()}")
+E       AssertionError: PIE: 재작성은 '성공'(exit 0)했지만 결과 바이너리가 정상 입력에서 시그널 SIGSEGV / exit=sig11
+E       assert (11 is None)
+E        +  where 11 = RunResult(cmd=['/tmp/pytest-of-root/pytest-0/test_B3_pie_build0/pie_h', 'N_slot1'], exit_code=None, signal=11, stdout='', stderr='', timed_out=False, detections=[], leaks={}).signal
+
+tests/test_week13.py:158: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_false_positive.py::test_E1_E2_classes[E2_multi_base2] - Ass...
+FAILED tests/test_false_positive.py::test_E5_vtsec_over_4kb[E5_first] - Asser...
+FAILED tests/test_false_positive.py::test_E5_vtsec_over_4kb[E5_all] - Asserti...
+FAILED tests/test_runtime_unit.py::test_C14_big_maps_no_false_positive - Asse...
+FAILED tests/test_week13.py::test_G_week13[N_m3_pb] - AssertionError: 오탐: V...
+FAILED tests/test_week13.py::test_G_week13[N_m3_pc] - AssertionError: 오탐: V...
+FAILED tests/test_week13.py::test_G_week13[N_vd_vr] - AssertionError: 오탐: V...
+FAILED tests/test_week13.py::test_G_week13[N_vd_vb] - AssertionError: 보호 후...
+FAILED tests/test_week13.py::test_G_week13[N_static] - AssertionError: 오탐: ...
+FAILED tests/test_week13.py::test_G_week13[N_small_stack] - AssertionError: ...
+FAILED tests/test_week13.py::test_G_week13[N_fd_exhausted] - AssertionError: ...
+FAILED tests/test_week13.py::test_G_week13[K_heap_slot1] - AssertionError: 미...
+FAILED tests/test_week13.py::test_G_week13[K_heap_slot3] - AssertionError: 미...
+FAILED tests/test_week13.py::test_G_week13[K_heap_wide20] - AssertionError: ...
+FAILED tests/test_week13.py::test_G_week13[K_heap_args] - AssertionError: 미...
+FAILED tests/test_week13.py::test_G_week13[K_heap_vdtor] - AssertionError: 미...
+FAILED tests/test_week13.py::test_G_week13[K_ro_slot1] - AssertionError: 미탐...
+FAILED tests/test_week13.py::test_B_optimized_build[B1_O1] - AssertionError: ...
+FAILED tests/test_week13.py::test_B_optimized_build[B2_O2] - AssertionError: ...
+FAILED tests/test_week13.py::test_B3_pie_build - AssertionError: PIE: 재작성...
+======================== 20 failed, 79 passed in 22.05s ========================

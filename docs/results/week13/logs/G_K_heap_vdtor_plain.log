@@ -1,0 +1,11 @@
+$ /tmp/pytest-of-root/pytest-0/w130/w13_plain K_heap_vdtor
+exit_code: 0
+signal: None
+timed_out: False
+verdict: 기타 (종료 코드 0)
+--- stdout ---
+DERIVED DTOR
+DERIVED DTOR
+
+--- stderr ---
+

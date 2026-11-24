@@ -1,0 +1,11 @@
+$ /tmp/pytest-of-root/pytest-0/w130/w13_hardened N_wide20
+exit_code: 0
+signal: None
+timed_out: False
+verdict: 기타 (종료 코드 0)
+--- stdout ---
+WIDE W20
+DERIVED DTOR
+
+--- stderr ---
+

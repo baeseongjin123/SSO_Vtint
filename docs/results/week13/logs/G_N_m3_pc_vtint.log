@@ -1,0 +1,10 @@
+$ /tmp/pytest-of-root/pytest-0/w130/w13_hardened N_m3_pc
+exit_code: 99
+signal: None
+timed_out: False
+verdict: 탐지 후 차단 (ID)
+--- stdout ---
+
+--- stderr ---
+VTINT DETECTED ID vfptr=0x00000000004054d0 region=[r--p]
+

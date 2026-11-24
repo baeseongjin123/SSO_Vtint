@@ -1,0 +1,10 @@
+$ /tmp/pytest-of-root/pytest-0/w130/w13_hardened K_heap_vd_vr
+exit_code: 99
+signal: None
+timed_out: False
+verdict: 탐지 후 차단 (READONLY)
+--- stdout ---
+
+--- stderr ---
+VTINT DETECTED READONLY vfptr=0x000000000ca4eef8 region=[rw-p]
+

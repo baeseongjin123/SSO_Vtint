@@ -27,6 +27,7 @@ STATUS=${PIPESTATUS[0]}
 echo "[2/2] 결과 복사 → $DEST"
 cp results/before_after.md "$DEST/"
 cp results/env.txt "$DEST/"
+[ -f results/week13_results.md ] && cp results/week13_results.md "$DEST/"   # 13주차 확장 검증 표
 date '+%Y-%m-%d %H:%M:%S %Z' > "$DEST/saved_at.txt"
 
 echo

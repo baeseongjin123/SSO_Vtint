@@ -1,0 +1,9 @@
+$ /tmp/pytest-of-root/pytest-0/test_B3_pie_build0/pie_h N_slot1
+exit_code: None
+signal: 11
+timed_out: False
+verdict: 시그널 SIGSEGV
+--- stdout ---
+
+--- stderr ---
+
